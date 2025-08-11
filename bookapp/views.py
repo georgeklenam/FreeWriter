@@ -2,10 +2,13 @@
 from django.shortcuts import render, redirect
 from .models import Book, Category
 from django.contrib.auth.forms import UserCreationForm
-from .forms import CreateUserForm
+from .forms import CreateUserForm, BookUploadForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+import os
+import re
 
 # Create your views here.
 
@@ -13,15 +16,55 @@ from django.contrib.auth.decorators import login_required
 def home(request):
 	"""Discription goes here
 	"""
-	recommended_books = Book.objects.filter(recommended_books = True)
-	fiction_books = Book.objects.filter(fiction_books = True)
-	business_books = Book.objects.filter(business_books = True)
+	recommended_books = Book.objects.filter(recommended_books=True)
+	fiction_books = Book.objects.filter(fiction_books=True)
+	business_books = Book.objects.filter(business_books=True)
+	
+	# If no specific books are found, show some general books
+	if not recommended_books.exists():
+		recommended_books = Book.objects.all()[:6]
+	if not fiction_books.exists():
+		fiction_books = Book.objects.all()[:6]
+	if not business_books.exists():
+		business_books = Book.objects.all()[:6]
+	
+	# Debug logging
+	print(f"DEBUG: Home view - Recommended: {recommended_books.count()}, Fiction: {fiction_books.count()}, Business: {business_books.count()}")
+	
+	# Debug image status for each book
+	for book in recommended_books:
+		if book.cover_image:
+			print(f"DEBUG: Recommended book {book.title} - Image: {book.cover_image.url}, Exists: {os.path.exists(book.cover_image.path)}")
+		else:
+			print(f"DEBUG: Recommended book {book.title} - NO IMAGE")
+	
+	for book in fiction_books:
+		if book.cover_image:
+			print(f"DEBUG: Fiction book {book.title} - Image: {book.cover_image.url}, Exists: {os.path.exists(book.cover_image.path)}")
+		else:
+			print(f"DEBUG: Fiction book {book.title} - NO IMAGE")
+	
+	for book in business_books:
+		if book.cover_image:
+			print(f"DEBUG: Business book {book.title} - Image: {book.cover_image.url}, Exists: {os.path.exists(book.cover_image.path)}")
+		else:
+			print(f"DEBUG: Business book {book.title} - NO IMAGE")
+	
 	return render(request, 'home.html', {'recommended_books':recommended_books,
 	'fiction_books': fiction_books, 'business_books': business_books
 	})
 
 def all_books(request):
 	books = Book.objects.all()
+	print(f"DEBUG: Found {books.count()} books in database")
+	for book in books:
+		print(f"DEBUG: Book: {book.title} - {book.author}")
+		if book.cover_image:
+			print(f"DEBUG: Book {book.title} has cover image: {book.cover_image.url}")
+			print(f"DEBUG: Image path: {book.cover_image.path}")
+			print(f"DEBUG: Image exists: {os.path.exists(book.cover_image.path)}")
+		else:
+			print(f"DEBUG: Book {book.title} has NO cover image")
 	return render(request, 'all_books.html', {'books':books})
 
 def category_detail(request, slug):
@@ -46,7 +89,7 @@ def register_page(request):
 		if register_form.is_valid():
 			register_form.save()
 			messages.info(request, "Congrats New FreeWriter member!")
-			return redirect('login/')
+			return redirect('login')
 
 	return render(request, 'register.html', {'register_form': register_form})
 
@@ -57,10 +100,9 @@ def login_page(request):
         user = authenticate(request, username = username, password = password)
         if user is not None:
             login(request, user)
-            return home(request) #redirect('home/')
+            return redirect('home')
         else:
             messages.info(request, "Invalid Credentials")
-
 
     return render(request, 'login.html', {})
 
@@ -74,6 +116,42 @@ def login_page(request):
 def logout_user (request):
     logout(request)
     request.session.flush()
-    #request.user = AnonymousUser
-    # Redirect to a success page.
-    return home(request) #redirect('home/')
+    return redirect('home')
+
+@login_required(login_url='login')
+def upload_book(request):
+    """Upload a new book"""
+    if request.method == 'POST':
+        form = BookUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            book = form.save(commit=False)
+            
+            # Generate slug from title
+            book.slug = re.sub(r'[^\w\s-]', '', book.title.lower())
+            book.slug = re.sub(r'[-\s]+', '-', book.slug).strip('-')
+            
+            # Set recommended flags based on category
+            categories = form.cleaned_data['category']
+            book.recommended_books = any(cat.name.lower() in ['business', 'fiction'] for cat in categories)
+            book.fiction_books = any(cat.name.lower() == 'fiction' for cat in categories)
+            book.business_books = any(cat.name.lower() == 'business' for cat in categories)
+            
+            # Add PDFDrive.com link if no PDF is uploaded
+            if not book.pdf:
+                import urllib.parse
+                clean_title = book.title.replace(':', '').replace('(', '').replace(')', '')
+                clean_title = ' '.join(clean_title.split())
+                encoded_title = urllib.parse.quote(clean_title)
+                book.pdf_url = f'https://www.welib.org/search?q={encoded_title}'
+            
+            book.save()
+            form.save_m2m()  # Save many-to-many relationships
+            
+            messages.success(request, f'Book "{book.title}" uploaded successfully!')
+            return redirect('book_detail', slug=book.slug)
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = BookUploadForm()
+    
+    return render(request, 'upload_book.html', {'form': form})

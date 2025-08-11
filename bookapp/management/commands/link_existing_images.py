@@ -1,0 +1,102 @@
+from django.core.management.base import BaseCommand
+from bookapp.models import Book
+from django.core.files import File
+import os
+import re
+
+class Command(BaseCommand):
+    help = 'Link existing images from media folder to books in database'
+
+    def handle(self, *args, **options):
+        self.stdout.write('Linking existing images to books...')
+        
+        # Get all image files from media/img directory
+        img_dir = os.path.join('media', 'img')
+        if not os.path.exists(img_dir):
+            self.stdout.write(self.style.ERROR(f'Image directory not found: {img_dir}'))
+            return
+        
+        image_files = [f for f in os.listdir(img_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))]
+        self.stdout.write(f'Found {len(image_files)} image files in {img_dir}')
+        
+        # Get all books from database
+        books = Book.objects.all()
+        self.stdout.write(f'Found {books.count()} books in database')
+        
+        linked_count = 0
+        
+        for book in books:
+            self.stdout.write(f'Processing book: {book.title}')
+            
+            # Try to find a matching image for this book
+            matching_image = self.find_matching_image(book.title, image_files)
+            
+            if matching_image:
+                img_path = os.path.join(img_dir, matching_image)
+                
+                # Check if book already has an image
+                if book.cover_image:
+                    self.stdout.write(f'  - Book already has image: {book.cover_image.name}')
+                    # Update with new image
+                    with open(img_path, 'rb') as img_file:
+                        book.cover_image.save(matching_image, File(img_file), save=True)
+                    self.stdout.write(f'  - Updated with: {matching_image}')
+                else:
+                    # Assign new image
+                    with open(img_path, 'rb') as img_file:
+                        book.cover_image.save(matching_image, File(img_file), save=True)
+                    self.stdout.write(f'  - Assigned: {matching_image}')
+                
+                linked_count += 1
+            else:
+                self.stdout.write(f'  - No matching image found for: {book.title}')
+        
+        self.stdout.write(self.style.SUCCESS(f'Linked {linked_count} images to books!'))
+        
+        # Show remaining unused images
+        used_images = [book.cover_image.name.split('/')[-1] for book in Book.objects.filter(cover_image__isnull=False)]
+        unused_images = [img for img in image_files if img not in used_images]
+        
+        if unused_images:
+            self.stdout.write(f'\nUnused images ({len(unused_images)}):')
+            for img in unused_images[:10]:  # Show first 10
+                self.stdout.write(f'  - {img}')
+            if len(unused_images) > 10:
+                self.stdout.write(f'  ... and {len(unused_images) - 10} more')
+
+    def find_matching_image(self, book_title, image_files):
+        """Find the best matching image for a book title"""
+        book_title_lower = book_title.lower()
+        
+        # Remove common words and clean title
+        clean_title = re.sub(r'\b(sample|book|guide|fundamentals|success)\b', '', book_title_lower)
+        clean_title = re.sub(r'[^\w\s]', '', clean_title).strip()
+        
+        # Try exact matches first
+        for img in image_files:
+            img_lower = img.lower()
+            img_clean = re.sub(r'[^\w\s]', '', img_lower).replace('_', ' ').replace('-', ' ')
+            
+            # Check if book title words appear in image name
+            title_words = clean_title.split()
+            if any(word in img_clean for word in title_words if len(word) > 2):
+                return img
+        
+        # If no match found, try partial matches
+        for img in image_files:
+            img_lower = img.lower()
+            
+            # Check for common patterns
+            if any(word in img_lower for word in ['fiction', 'business', 'science', 'technology', 'self-help']):
+                if 'fiction' in book_title_lower and 'fiction' in img_lower:
+                    return img
+                elif 'business' in book_title_lower and 'business' in img_lower:
+                    return img
+                elif 'science' in book_title_lower and 'science' in img_lower:
+                    return img
+        
+        # If still no match, assign any available image
+        if image_files:
+            return image_files[0]  # Return first available image
+        
+        return None

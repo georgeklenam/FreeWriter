@@ -17,10 +17,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from bookapp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('book/', include('bookapp.urls')),
+    path('', views.home, name='home'),  # Home page at root
+    path('books/', include('bookapp.urls')),  # All other book-related URLs under /books/
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 

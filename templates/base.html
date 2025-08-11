@@ -51,7 +51,7 @@
             Hello {{user.username}}
           </button>
           <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-            <li><a class="dropdown-item" href="#">Upload Book</a></li>
+            <li><a class="dropdown-item" href="{% url 'upload_book' %}">Upload Book</a></li>
             <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
           </ul>
         </div>
@@ -95,7 +95,7 @@
 
 
     <footer>
-        <h4><strong>©Harriet Antonio @2021 </strong></h4><br>
+        <h4><strong>©George Klenam @2021 </strong></h4><br>
     </footer>
     <footer>
        <h4><hr>
