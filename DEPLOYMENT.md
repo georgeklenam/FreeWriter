@@ -1,253 +1,387 @@
-# FreeWriter Deployment Guide
+# FreeWriter Production Deployment Guide
 
-This guide covers deploying the FreeWriter Django application using Docker containers.
+This guide covers deploying FreeWriter to production using Docker with Gunicorn and WhiteNoise.
 
-## Prerequisites
+## 🚀 Quick Start
 
-- Docker and Docker Compose installed
-- Git (for cloning the repository)
-- At least 1GB of available RAM
+### 1. Build Production Image
 
-## Development Environment
+```bash
+# Build the production Docker image
+docker build -f Dockerfile.prod -t freewriter-prod .
 
-### Quick Start
+# Or using the production dockerignore
+docker build -f Dockerfile.prod --file .dockerignore.prod -t freewriter-prod .
+```
 
-1. **Clone and navigate to the project:**
+### 2. Run Production Container
 
-   ```bash
-   git clone <repository-url>
-   cd FreeWriter
-   ```
+```bash
+# Run the production container
+docker run -d \
+  --name freewriter-prod \
+  -p 8000:8000 \
+  -v $(pwd)/media:/app/media \
+  -v $(pwd)/logs:/app/logs \
+  -e SECRET_KEY="your-secret-key-here" \
+  freewriter-prod
+```
 
-2. **Build and run with Docker Compose:**
+### 3. Access the Application
 
-   ```bash
-   docker-compose up --build
-   ```
+- **Main Site**: http://localhost:8000
+- **Admin Panel**: http://localhost:8000/admin
+- **Default Admin**: `admin` / `f001`
 
-3. **Access the application:**
-   - Open your browser and go to `http://localhost:8000`
-   - The application will be running with hot-reload enabled
+## 📋 Production Requirements
 
-### Development Commands
+### System Requirements
 
-- **Start services:** `docker-compose up`
-- **Start in background:** `docker-compose up -d`
-- **Stop services:** `docker-compose down`
-- **View logs:** `docker-compose logs -f web`
-- **Rebuild:** `docker-compose up --build`
-
-## Production Environment
+- **Docker**: 20.10+
+- **Memory**: 512MB minimum, 1GB recommended
+- **Storage**: 2GB minimum for application + media files
+- **CPU**: 1 core minimum, 2 cores recommended
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
-
 ```bash
-# Django Settings
-SECRET_KEY=your-super-secret-key-here
-DEBUG=False
-ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+# Required
+SECRET_KEY=your-secret-key-here
 
-# Database (if using external database)
-DATABASE_URL=postgresql://user:password@host:port/dbname
+# Optional (for HTTPS)
+SECURE_SSL_REDIRECT=True
+SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO', 'https')
 ```
 
-### Production Deployment
+## 🔧 Production Configuration
 
-1. **Build and run production container:**
+### Security Settings
 
-   ```bash
-   docker-compose -f docker-compose.prod.yml up --build -d
-   ```
+The production settings include:
 
-2. **Run database migrations:**
+- ✅ **DEBUG = False**
+- ✅ **Security headers** (HSTS, XSS protection, etc.)
+- ✅ **CSRF protection**
+- ✅ **Session security**
+- ✅ **Non-root user** in container
 
-   ```bash
-   docker-compose -f docker-compose.prod.yml exec web python manage.py migrate
-   ```
+### Performance Optimizations
 
-3. **Create superuser:**
+- ✅ **Gunicorn** with 3 workers
+- ✅ **WhiteNoise** for static file serving
+- ✅ **Compressed static files**
+- ✅ **SQLite3** database
+- ✅ **In-memory caching**
 
-   ```bash
-   docker-compose -f docker-compose.prod.yml exec web python manage.py createsuperuser
-   ```
+### File Storage
 
-4. **Collect static files:**
+- ✅ **Media files** stored in `/app/media/`
+- ✅ **Static files** collected to `/app/staticfiles/`
+- ✅ **Logs** written to `/app/logs/`
 
-   ```bash
-   docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput
-   ```
+## 🐳 Docker Commands
 
-### Production Commands
-
-- **Start production:** `docker-compose -f docker-compose.prod.yml up -d`
-- **Stop production:** `docker-compose -f docker-compose.prod.yml down`
-- **View logs:** `docker-compose -f docker-compose.prod.yml logs -f web`
-- **Restart:** `docker-compose -f docker-compose.prod.yml restart`
-
-## Docker Commands Reference
-
-### Building Images
+### Build and Run
 
 ```bash
-# Build development image
-docker build -t freewriter:dev .
-
 # Build production image
-docker build -f Dockerfile.prod -t freewriter:prod .
+docker build -f Dockerfile.prod -t freewriter-prod .
+
+# Run with volume mounts
+docker run -d \
+  --name freewriter-prod \
+  -p 8000:8000 \
+  -v $(pwd)/media:/app/media \
+  -v $(pwd)/logs:/app/logs \
+  -e SECRET_KEY="your-secret-key-here" \
+  freewriter-prod
+
+# Run in background
+docker run -d \
+  --name freewriter-prod \
+  -p 8000:8000 \
+  -v $(pwd)/media:/app/media \
+  -v $(pwd)/logs:/app/logs \
+  -e SECRET_KEY="your-secret-key-here" \
+  --restart unless-stopped \
+  freewriter-prod
 ```
 
-### Running Containers
+### Management Commands
 
 ```bash
-# Run development container
-docker run -p 8000:8000 -v $(pwd):/app freewriter:dev
+# View logs
+docker logs freewriter-prod
 
-# Run production container
-docker run -p 8000:8000 freewriter:prod
-```
+# Follow logs
+docker logs -f freewriter-prod
 
-### Container Management
+# Execute commands in container
+docker exec -it freewriter-prod python manage.py shell --settings=FreeWriter.settings_prod
 
-```bash
-# List running containers
-docker ps
+# Create superuser
+docker exec -it freewriter-prod python manage.py createsuperuser --settings=FreeWriter.settings_prod
+
+# Run management commands
+docker exec -it freewriter-prod python manage.py create_books_from_images --settings=FreeWriter.settings_prod
+docker exec -it freewriter-prod python manage.py fix_pdfs --settings=FreeWriter.settings_prod
+docker exec -it freewriter-prod python manage.py fix_images --settings=FreeWriter.settings_prod
 
 # Stop container
-docker stop <container_id>
+docker stop freewriter-prod
 
 # Remove container
-docker rm <container_id>
+docker rm freewriter-prod
 
-# View container logs
-docker logs <container_id>
+# Remove image
+docker rmi freewriter-prod
 ```
 
-## Troubleshooting
+## 🔒 Security Considerations
 
-### Common Issues
-
-1. **Port already in use:**
-
-   ```bash
-   # Check what's using port 8000
-   lsof -i :8000
-   
-   # Kill the process or change port in docker-compose.yml
-   ```
-
-2. **Permission denied errors:**
-
-   ```bash
-   # Fix file permissions
-   sudo chown -R $USER:$USER .
-   ```
-
-3. **Database connection issues:**
-
-   ```bash
-   # Check if database is accessible
-   docker-compose exec web python manage.py dbshell
-   ```
-
-4. **Static files not loading:**
-
-   ```bash
-   # Recollect static files
-   docker-compose exec web python manage.py collectstatic --noinput
-   ```
-
-### Logs and Debugging
+### 1. Secret Key
 
 ```bash
-# View application logs
-docker-compose logs web
+# Generate a secure secret key
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 
-# View real-time logs
-docker-compose logs -f web
-
-# Access container shell
-docker-compose exec web bash
-
-# Check Django status
-docker-compose exec web python manage.py check
+# Set in environment
+export SECRET_KEY="your-generated-secret-key"
 ```
 
-## Performance Optimization
+### 2. Allowed Hosts
 
-### Production Settings
+Update `ALLOWED_HOSTS` in `settings_prod.py`:
 
-- Use `Dockerfile.prod` for production builds
-- Enable gunicorn with multiple workers
-- Use volume mounts for persistent data
-- Implement proper logging and monitoring
-
-### Resource Limits
-
-Add to your docker-compose file:
-
-```yaml
-services:
-  web:
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
+```python
+ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com', 'localhost']
 ```
 
-## Security Considerations
+### 3. HTTPS (Recommended)
 
-- Never commit `.env` files to version control
-- Use strong, unique SECRET_KEY values
-- Regularly update base images and dependencies
-- Run containers as non-root users (already configured)
-- Implement proper firewall rules
-- Use HTTPS in production
+```bash
+# Set HTTPS environment variables
+export SECURE_SSL_REDIRECT=True
+export SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO', 'https')
+```
 
-## Monitoring and Maintenance
+## 📊 Monitoring and Logging
+
+### Log Files
+
+- **Application logs**: `/app/logs/django.log`
+- **Gunicorn logs**: Container stdout/stderr
+- **Access logs**: Gunicorn access log
 
 ### Health Checks
 
-The production container includes health checks. Monitor with:
-
+The container includes health checks:
 ```bash
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+# Check container health
+docker inspect --format='{{.State.Health.Status}}' freewriter-prod
 ```
 
-### Backup Strategy
+### Performance Monitoring
 
 ```bash
+# Monitor resource usage
+docker stats freewriter-prod
+
+# Check disk usage
+docker exec freewriter-prod df -h
+```
+
+## 🔄 Backup and Recovery
+
+### Database Backup
+
+```bash
+# Backup SQLite database
+docker exec freewriter-prod cp /app/db.sqlite3 /app/backup_$(date +%Y%m%d_%H%M%S).sqlite3
+
+# Copy backup from container
+docker cp freewriter-prod:/app/backup_20231201_120000.sqlite3 ./backup.sqlite3
+```
+
+### Media Files Backup
+
+```bash
+# Backup media directory
+tar -czf media_backup_$(date +%Y%m%d_%H%M%S).tar.gz media/
+```
+
+### Full Backup Script
+
+```bash
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="backups/$DATE"
+
+mkdir -p $BACKUP_DIR
+
 # Backup database
-docker-compose exec web python manage.py dumpdata > backup.json
+docker exec freewriter-prod cp /app/db.sqlite3 /app/backup_$DATE.sqlite3
+docker cp freewriter-prod:/app/backup_$DATE.sqlite3 $BACKUP_DIR/
 
 # Backup media files
-tar -czf media_backup.tar.gz media/
+tar -czf $BACKUP_DIR/media_backup.tar.gz media/
+
+# Backup logs
+tar -czf $BACKUP_DIR/logs_backup.tar.gz logs/
+
+echo "Backup completed: $BACKUP_DIR"
 ```
 
-### Updates
+## 🚨 Troubleshooting
+
+### Common Issues
+
+#### 1. Permission Errors
 
 ```bash
-# Pull latest changes
-git pull origin main
-
-# Rebuild and restart
-docker-compose -f docker-compose.prod.yml up --build -d
+# Fix media directory permissions
+sudo chown -R 1000:1000 media/
+sudo chmod -R 755 media/
 ```
 
-## Support
+#### 2. Static Files Not Loading
 
-For issues and questions:
+```bash
+# Recollect static files
+docker exec freewriter-prod python manage.py collectstatic --noinput --settings=FreeWriter.settings_prod
+```
 
-- Check the logs: `docker-compose logs web`
-- Review Django documentation
-- Check Docker documentation
-- Review the project README.md
+#### 3. Database Issues
+
+```bash
+# Reset database (WARNING: This will delete all data)
+docker exec freewriter-prod rm /app/db.sqlite3
+docker exec freewriter-prod python manage.py migrate --settings=FreeWriter.settings_prod
+```
+
+#### 4. Memory Issues
+
+```bash
+# Check memory usage
+docker stats freewriter-prod
+
+# Increase memory limit
+docker run -d --memory=1g --name freewriter-prod ...
+```
+
+### Log Analysis
+
+```bash
+# View recent logs
+docker logs --tail=100 freewriter-prod
+
+# Search for errors
+docker logs freewriter-prod | grep -i error
+
+# Monitor real-time
+docker logs -f freewriter-prod
+```
+
+## 🔄 Updates and Maintenance
+
+### Update Application
+
+```bash
+# Stop current container
+docker stop freewriter-prod
+
+# Remove old container
+docker rm freewriter-prod
+
+# Build new image
+docker build -f Dockerfile.prod -t freewriter-prod .
+
+# Run new container
+docker run -d \
+  --name freewriter-prod \
+  -p 8000:8000 \
+  -v $(pwd)/media:/app/media \
+  -v $(pwd)/logs:/app/logs \
+  -e SECRET_KEY="your-secret-key-here" \
+  --restart unless-stopped \
+  freewriter-prod
+```
+
+### Database Migrations
+
+```bash
+# Run migrations
+docker exec freewriter-prod python manage.py migrate --settings=FreeWriter.settings_prod
+
+# Check migration status
+docker exec freewriter-prod python manage.py showmigrations --settings=FreeWriter.settings_prod
+```
+
+## 📈 Scaling Considerations
+
+### Horizontal Scaling
+
+For high traffic, consider:
+
+- **Load balancer** (nginx, haproxy)
+- **Multiple containers** behind load balancer
+- **External database** (PostgreSQL, MySQL)
+- **CDN** for static files
+- **Redis** for caching
+
+### Vertical Scaling
+
+```bash
+# Increase resources
+docker run -d \
+  --name freewriter-prod \
+  --memory=2g \
+  --cpus=2 \
+  -p 8000:8000 \
+  -v $(pwd)/media:/app/media \
+  -v $(pwd)/logs:/app/logs \
+  -e SECRET_KEY="your-secret-key-here" \
+  freewriter-prod
+```
+
+## 🎯 Production Checklist
+
+- [ ] **Security**
+  - [ ] Secret key set via environment variable
+  - [ ] DEBUG = False
+  - [ ] Allowed hosts configured
+  - [ ] HTTPS enabled (recommended)
+
+- [ ] **Performance**
+  - [ ] Static files collected
+  - [ ] Gunicorn workers configured
+  - [ ] WhiteNoise enabled
+  - [ ] Logging configured
+
+- [ ] **Monitoring**
+  - [ ] Health checks working
+  - [ ] Logs accessible
+  - [ ] Resource monitoring set up
+
+- [ ] **Backup**
+  - [ ] Database backup strategy
+  - [ ] Media files backup
+  - [ ] Recovery procedures tested
+
+- [ ] **Documentation**
+  - [ ] Deployment procedures documented
+  - [ ] Troubleshooting guide available
+  - [ ] Contact information for support
+
+## 📞 Support
+
+For deployment issues:
+
+1. Check the logs: `docker logs freewriter-prod`
+2. Verify configuration in `settings_prod.py`
+3. Test locally with production settings
+4. Review this deployment guide
 
 ---
 
-**Note**: This deployment guide assumes you're running on a Linux/Unix system. Windows users may need to adjust some commands accordingly.
+**Note**: This deployment guide assumes you're using Docker. For other deployment methods (Heroku, AWS, etc.), additional configuration may be required.

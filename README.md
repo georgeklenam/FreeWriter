@@ -46,7 +46,35 @@ A Django-based web application for managing and sharing PDF books and eBooks. Fr
 4. **Access the application:**
    - Open your browser and go to `http://localhost:8000`
 
-### Option 2: Local Development
+### Option 2: Production Deployment
+
+For production deployment with Gunicorn and WhiteNoise:
+
+1. **Build production image:**
+
+   ```bash
+   docker build -f Dockerfile.prod -t freewriter-prod .
+   ```
+
+2. **Run production container:**
+
+   ```bash
+   docker run -d \
+     --name freewriter-prod \
+     -p 8000:8000 \
+     -v $(pwd)/media:/app/media \
+     -v $(pwd)/logs:/app/logs \
+     -e SECRET_KEY="your-secret-key-here" \
+     freewriter-prod
+   ```
+
+3. **Access the application:**
+   - Main site: `http://localhost:8000`
+   - Admin panel: `http://localhost:8000/admin`
+
+**For detailed production deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
+
+### Option 3: Local Development
 
 1. **Clone the repository:**
 
@@ -59,7 +87,7 @@ A Django-based web application for managing and sharing PDF books and eBooks. Fr
 
    ```bash
    python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   .venv\Scripts\activate # On mac:  source .venv/bin/activate
    ```
 
 3. **Install dependencies:**
@@ -155,15 +183,6 @@ You can access the admin panel at `/admin/` using these credentials.
 
 ## Troubleshooting
 
-### Images Not Displaying
-
-If images are not showing on the website:
-
-1. **Check Media Files**: Visit `/book/media_test/` to verify media directory structure and file existence
-2. **Verify File Permissions**: Ensure the `media/` directory has proper read permissions
-3. **Check Database**: Verify that books have cover_image fields populated
-4. **Django Settings**: Confirm `MEDIA_URL` and `MEDIA_ROOT` are properly configured
-
 ### Common Issues
 
 - **No Books Showing**: Run `python manage.py create_books_from_images` to create books from your media folder
@@ -196,8 +215,6 @@ docker stop freewriter-app
 docker rm freewriter-app
 ```
 
-## Troubleshooting
-
 ### Common Installation Issues
 
 1. **Docker build errors**: Ensure Docker is properly installed and running
@@ -208,7 +225,7 @@ docker rm freewriter-app
 ### Alternative Solutions
 
 - Use Python 3.9.18 for best compatibility
-- Use `requirements-simple.txt` for minimal setup
+- Use `requirements.txt` for dependencies
 - Use Docker to avoid environment issues
 - Check the `DEPLOYMENT.md` for detailed troubleshooting
 
