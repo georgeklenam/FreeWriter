@@ -44,16 +44,16 @@ class BookUploadForm(forms.ModelForm):
 
 class CreateUserForm(UserCreationForm):
 	username = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
-		'class':"form-control", 'placeholder':"Enter Username.."
+		'class': 'form-input', 'placeholder': 'Enter your username'
 		}))
 	email = forms.CharField(max_length=100, widget=forms.EmailInput(attrs={
-		'class':"form-control", 'placeholder':"Enter Email Address.."
+		'class': 'form-input', 'placeholder': 'Enter your email address'
 		}))
 	password1 = forms.CharField(max_length=100, widget=forms.PasswordInput(attrs={
-		'class':"form-control", 'placeholder':"At least eight charaters!"
+		'class': 'form-input', 'placeholder': 'At least eight characters'
 		}))
 	password2 = forms.CharField(max_length=100, widget=forms.PasswordInput(attrs={
-		'class':"form-control", 'placeholder':"Confirm password"
+		'class': 'form-input', 'placeholder': 'Confirm your password'
 		}))
 
 	class Meta:

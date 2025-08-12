@@ -1,48 +1,108 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 <title>FreeWriter | Register</title>
 {% endblock %}
 
-
 {% block content %}
-<div id = 'container'>
-    <div class = 'header'>
-      <h2>Create an account</h2>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo-container">
+                <img src="{% static 'img/pdf 3.png' %}" alt="FreeWriter Logo" class="auth-logo">
+            </div>
+            <h1 class="auth-title">Join FreeWriter</h1>
+            <p class="auth-subtitle">Create your account to start exploring books</p>
+        </div>
+        
+        <form method="POST" class="auth-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ register_form.username.id_for_label }}" class="form-label">
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                {{ register_form.username }}
+                {% if register_form.username.errors %}
+                    <div class="error-message">
+                        {% for error in register_form.username.errors %}
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ register_form.email.id_for_label }}" class="form-label">
+                    <i class="fas fa-envelope"></i>
+                    Email Address
+                </label>
+                {{ register_form.email }}
+                {% if register_form.email.errors %}
+                    <div class="error-message">
+                        {% for error in register_form.email.errors %}
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ register_form.password1.id_for_label }}" class="form-label">
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
+                {{ register_form.password1 }}
+                {% if register_form.password1.errors %}
+                    <div class="error-message">
+                        {% for error in register_form.password1.errors %}
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ register_form.password2.id_for_label }}" class="form-label">
+                    <i class="fas fa-lock"></i>
+                    Confirm Password
+                </label>
+                {{ register_form.password2 }}
+                {% if register_form.password2.errors %}
+                    <div class="error-message">
+                        {% for error in register_form.password2.errors %}
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if register_form.non_field_errors %}
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {% for error in register_form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <button type="submit" class="auth-button">
+                <i class="fas fa-user-plus"></i>
+                Create Account
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Already have an account? 
+                <a href="{% url 'login' %}" class="auth-link">Sign in here</a>
+            </p>
+        </div>
     </div>
-    <form action = '#' method = 'POST'>
-      {% csrf_token %}
-      <div id = 'form-control'>
-          <label>Username:</label>
-          <!-- <input type="text" name="username" class="form-control" placeholder="Enter Username" maxlength="100" autofocus="" required=""> -->
-          {{register_form.username}}
-        </div>
-        <div id = 'form-control'>
-          <label>Email:</label>
-          <!-- <input type= "email" name="email" class="form-control" placeholder="Enter EmailAddress" maxlength="100" autofocus="" required=""> -->
-          {{register_form.email}}
-        </div>
-
-      <div id = 'form-control'>
-          <label>Password:</label>
-          <!-- <input type="password" name="password1" class="form-control" placeholder="At least eight characters" maxlength="100" autofocus="" required=""> -->
-          {{register_form.password1}}
-        </div>
-
-       <div id = 'form-control'>
-          <label>Confirm Password:</label>
-          <!-- <input type="password" name="password2" class="form-control" placeholder="Confirm password" maxlength="100" autofocus="" required=""> -->
-          {{register_form.password2}}
-        </div>
-
-        {{register_form.errors}}
-
-
-      <div id = 'haveAnAccount'>
-        <p>Have a FreeWriter account?</p>
-        <a href = "{% url 'login' %}"><strong>Login</strong></a>
-      </div>
-      <button type = 'submit' id = 'submitButton'>Register</button>
-    </form>
-  </div>
-  {% endblock %}
+</div>
+{% endblock %}
