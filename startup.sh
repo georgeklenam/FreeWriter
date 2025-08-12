@@ -58,8 +58,8 @@ if ! python setup_db.py; then
     fi
 fi
 
-# Check for missing category description field and fix it
-echo "Checking for missing category description field..."
+# Check for missing fields and fix them
+echo "Checking for missing model fields..."
 python -c "
 import os
 import sys
@@ -75,18 +75,35 @@ try:
     # Check if category description field exists
     with connection.cursor() as cursor:
         cursor.execute('PRAGMA table_info(bookapp_category)')
-        columns = [row[1] for row in cursor.fetchall()]
+        category_columns = [row[1] for row in cursor.fetchall()]
         
-        if 'description' not in columns:
+        if 'description' not in category_columns:
             print('Category description field missing. Running migration...')
-            # Run the specific migration for category description
             call_command('migrate', 'bookapp', '0005_add_category_description', '--noinput')
             print('Category description field added successfully!')
         else:
             print('Category description field already exists.')
+    
+    # Check if book timestamp fields exist
+    with connection.cursor() as cursor:
+        cursor.execute('PRAGMA table_info(bookapp_book)')
+        book_columns = [row[1] for row in cursor.fetchall()]
+        
+        missing_fields = []
+        if 'created_at' not in book_columns:
+            missing_fields.append('created_at')
+        if 'updated_at' not in book_columns:
+            missing_fields.append('updated_at')
+        
+        if missing_fields:
+            print(f'Book timestamp fields missing: {missing_fields}. Running migration...')
+            call_command('migrate', 'bookapp', '0006_add_book_timestamps', '--noinput')
+            print('Book timestamp fields added successfully!')
+        else:
+            print('Book timestamp fields already exist.')
             
 except Exception as e:
-    print(f'Error checking category field: {e}')
+    print(f'Error checking model fields: {e}')
     # Try to run all pending migrations
     try:
         print('Attempting to run all pending migrations...')
@@ -97,7 +114,7 @@ except Exception as e:
         exit(1)
 "
 if [ $? -ne 0 ]; then
-    echo "Failed to fix category description field. Exiting."
+    echo "Failed to fix missing model fields. Exiting."
     exit 1
 fi
 
