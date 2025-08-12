@@ -5,28 +5,58 @@
 {% endblock %}
 
 {% block content %}
-<div class = 'container'>
-    <div class = 'row'><h4></h4></div>
-    <div class = 'row'>
-      {% for book in category.books.all %}
-      <div class = 'col-6 col-sm-4 col-md-4 col-lg-3 col-xl-2'>
-        <a href = "{% url 'book_detail' book.slug %}">
-          <div>
-                         <div class="uk-card uk-card-default uk-card-body">
-                 {% if book.cover_image %}
-                     <img src="{{book.cover_image.url}}" alt="{{book.title}}" style="max-width: 100%; height: auto;">
-                 {% else %}
-                     <div style="width: 100%; height: 150px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #666;">
-                         <span>No Image</span>
-                     </div>
-                 {% endif %}
-             </div>
+
+<div class="genre-page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-tag"></i>
+            {{category.name}} Books
+        </h1>
+        <p class="page-subtitle">Discover amazing books in the {{category.name}} category</p>
+        <div class="books-count">
+            <span class="count-number">{{category.books.count}}</span>
+            <span class="count-label">Books Available</span>
         </div>
-      </a>
-      </div>
-      {% endfor %}
-
-
     </div>
-  </div>
-  {% endblock %}
+    
+    <div class="books-grid">
+        {% for book in category.books.all %}
+        <div class="book-card">
+            <a href="{% url 'book_detail' book.slug %}" class="book-link">
+                <div class="book-cover">
+                    {% if book.cover_image %}
+                        <img src="{{book.cover_image.url}}" alt="{{book.title}}" class="cover-image">
+                    {% else %}
+                        <div class="no-image">
+                            <i class="fas fa-book"></i>
+                            <span>No Image</span>
+                        </div>
+                    {% endif %}
+                    <div class="book-overlay">
+                        <i class="fas fa-eye"></i>
+                        <span>View Details</span>
+                    </div>
+                </div>
+                <div class="book-info">
+                    <h3 class="book-title">{{book.title}}</h3>
+                    <p class="book-author">{{book.author}}</p>
+                    <div class="book-categories">
+                        {% for category in book.category.all|slice:":2" %}
+                            <span class="category-tag">{{category.name}}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="no-books">
+            <i class="fas fa-book-open"></i>
+            <h3>No Books in This Category</h3>
+            <p>We're working on adding more books to this category.</p>
+            <a href="{% url 'home' %}" class="btn-home">Go to Home</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
