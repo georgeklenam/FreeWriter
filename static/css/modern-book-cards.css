@@ -3,6 +3,13 @@
 /* Import Font Awesome for icons */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
+/* Global body styles to prevent overlay issues */
+body {
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
 /* ===== HOME PAGE STYLES ===== */
 
 .home-container {
@@ -362,6 +369,10 @@
     margin-top: 80px;
     position: relative;
     overflow: hidden;
+    z-index: 1;
+    width: 100%;
+    clear: both;
+    display: block;
 }
 
 .modern-footer::before {
@@ -372,6 +383,7 @@
     right: 0;
     height: 4px;
     background: linear-gradient(90deg, #667eea, #764ba2);
+    z-index: 2;
 }
 
 .footer-container {
@@ -379,7 +391,9 @@
     margin: 0 auto;
     padding: 0 20px;
     position: relative;
-    z-index: 2;
+    z-index: 3;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .footer-content {
@@ -641,6 +655,30 @@
 
 .legal-link:hover {
     color: #667eea;
+}
+
+/* Main Content */
+.main-content {
+    min-height: calc(100vh - 200px);
+    padding: 40px 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Override any Bootstrap footer conflicts */
+footer.modern-footer {
+    background: linear-gradient(135deg, #1a202c, #2d3748) !important;
+    color: white !important;
+    padding: 80px 0 30px !important;
+    margin-top: 80px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    z-index: 1 !important;
+    width: 100% !important;
+    clear: both !important;
+    display: block !important;
+    height: auto !important;
+    min-height: auto !important;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
