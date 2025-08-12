@@ -179,6 +179,7 @@ If images are not showing on the website:
 - **Missing PDFs**: PDFs are automatically assigned and Welib.org links added when using Docker
 - **Template Errors**: Check that all templates extend `base.html`
 - **Static Files**: Run `python manage.py collectstatic` if needed
+- **Database Errors**: If you see 'pdf_url' column errors, ensure migrations are run: `python manage.py migrate`
 
 **Note**: For local development, you may need to run these commands manually:
 
