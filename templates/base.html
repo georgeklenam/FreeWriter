@@ -15,6 +15,7 @@
     <link rel = 'stylesheet' href ="{% static 'css/book_detail.css' %}">
     <link rel = 'stylesheet' href ="{% static 'css/auth.css' %}">
     <link rel = 'stylesheet' href ="{% static 'css/modern-navbar.css' %}">
+    <link rel = 'stylesheet' href ="{% static 'css/modern-book-cards.css' %}">
     <link rel = 'stylesheet' href = "{% static 'uikit/css/uikit.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -121,33 +122,70 @@
   <footer class="modern-footer">
     <div class="footer-container">
       <div class="footer-content">
-        <div class="footer-section">
+        <div class="footer-section footer-main">
           <div class="footer-brand">
             <img src="{% static 'img/pdf 3.png' %}" alt="FreeWriter" class="footer-logo">
-            <h3 class="footer-title">FreeWriter</h3>
+            <div class="brand-info">
+              <h3 class="footer-title">FreeWriter</h3>
+              <p class="brand-tagline">Your #1 PDF Search Engine</p>
+            </div>
           </div>
           <p class="footer-description">
-            Your #1 search engine for PDF files. We have eBooks for you to download for free. 
-            No annoying ads, no download limits, enjoy it and don't forget to share the love!
+            Discover thousands of free eBooks across all genres. No annoying ads, no download limits. 
+            Start your reading journey today and don't forget to share the love!
           </p>
+          <div class="footer-stats">
+            <div class="stat-item">
+              <span class="stat-number">1000+</span>
+              <span class="stat-label">Books</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">50+</span>
+              <span class="stat-label">Categories</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">24/7</span>
+              <span class="stat-label">Access</span>
+            </div>
+          </div>
         </div>
         
         <div class="footer-section">
-          <h4 class="footer-heading">Quick Links</h4>
+          <h4 class="footer-heading">
+            <i class="fas fa-compass"></i>
+            Quick Navigation
+          </h4>
           <ul class="footer-links">
-            <li><a href="{% url 'home' %}">Home</a></li>
-            <li><a href="{% url 'all_books' %}">Books</a></li>
+            <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="{% url 'all_books' %}"><i class="fas fa-book"></i> All Books</a></li>
             {% if user.is_authenticated %}
-              <li><a href="{% url 'upload_book' %}">Upload Book</a></li>
+              <li><a href="{% url 'upload_book' %}"><i class="fas fa-upload"></i> Upload Book</a></li>
             {% endif %}
+            <li><a href="{% url 'register' %}"><i class="fas fa-user-plus"></i> Join Us</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4 class="footer-heading">Connect</h4>
+          <h4 class="footer-heading">
+            <i class="fas fa-tags"></i>
+            Popular Categories
+          </h4>
+          <ul class="footer-links">
+            {% for category in categories|slice:":5" %}
+              <li><a href="{% url 'category_detail' category.slug %}"><i class="fas fa-tag"></i> {{category.name}}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">
+            <i class="fas fa-share-alt"></i>
+            Connect With Us
+          </h4>
+          <p class="social-description">Follow us for updates and new book releases</p>
           <div class="social-links">
             <a href="#" class="social-link" aria-label="Facebook">
-              <i class="fab fa-facebook"></i>
+              <i class="fab fa-facebook-f"></i>
             </a>
             <a href="#" class="social-link" aria-label="Twitter">
               <i class="fab fa-twitter"></i>
@@ -155,13 +193,32 @@
             <a href="#" class="social-link" aria-label="Instagram">
               <i class="fab fa-instagram"></i>
             </a>
+            <a href="#" class="social-link" aria-label="LinkedIn">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+          </div>
+          <div class="newsletter-signup">
+            <p class="newsletter-text">Stay updated with new releases</p>
+            <div class="newsletter-form">
+              <input type="email" placeholder="Enter your email" class="newsletter-input">
+              <button type="submit" class="newsletter-btn">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
       
       <div class="footer-bottom">
-        <div class="footer-copyright">
-          <p>&copy; 2021 George Klenam. All rights reserved.</p>
+        <div class="footer-bottom-content">
+          <div class="footer-copyright">
+            <p>&copy; 2021 George Klenam. All rights reserved.</p>
+          </div>
+          <div class="footer-legal">
+            <a href="#" class="legal-link">Privacy Policy</a>
+            <a href="#" class="legal-link">Terms of Service</a>
+            <a href="#" class="legal-link">Cookie Policy</a>
+          </div>
         </div>
       </div>
     </div>

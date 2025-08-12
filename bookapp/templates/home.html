@@ -4,83 +4,172 @@
     <title>FreeWriter | Home</title>
 {% endblock %}
 
-
 {% block content %}
-
-<div class = 'container'>
-  <div class = 'row'><h4>Recommended Books</h4></div>
-  <div class = 'row'>
-    {% for book in recommended_books %}
-    <div class = 'col-6 col-sm-4 col-md-4 col-lg-3 col-xl-2'>
-      <a href = "{% url 'book_detail' book.slug %}">
-        <div>
-          <div class="uk-card uk-card-default uk-card-body">
-              {% if book.cover_image %}
-                  <img src="{{book.cover_image.url}}" alt="{{book.title}}" style="max-width: 100%; height: auto;">
-              {% else %}
-                  <div style="width: 100%; height: 150px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #666;">
-                      <span>No Image</span>
-                  </div>
-              {% endif %}
-          </div>
-      </div>
-    </a>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
-
-<div class = 'container'>
-  <div class = 'row'><h4>Top Fiction Books</h4></div>
-  <div class = 'row'>
-    {% for book in fiction_books %}
-    <div class = 'col-6 col-sm-4 col-md-4 col-lg-3 col-xl-2'>
-      <a href = "">
-        <div>
-          <div class="uk-card uk-card-default uk-card-body">
-             {% if book.cover_image %}
-                 <img src="{{book.cover_image.url}}" alt="{{book.title}}" style="max-width: 100%; height: auto;">
-             {% else %}
-                 <div style="width: 100%; height: 150px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #666;">
-                     <span>No Image</span>
-                 </div>
-             {% endif %}
-          </div>
-      </div>
-    </a>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
-
-<div class = 'container'>
-    <div class = 'row'><h4>Top Business Books</h4></div>
-    <div class = 'row'>
-        {% for book in business_books %}
-      <div class = 'col-6 col-sm-4 col-md-4 col-lg-3 col-xl-2'>
-        <a href = "">
-          <div>
-            <div class="uk-card uk-card-default uk-card-body">
-               {% if book.cover_image %}
-                   <img src="{{book.cover_image.url}}" alt="{{book.title}}" style="max-width: 100%; height: auto;">
-               {% else %}
-                   <div style="width: 100%; height: 150px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #666;">
-                       <span>No Image</span>
-                   </div>
-               {% endif %}
-            </div>
+<div class="home-container">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Welcome to FreeWriter</h1>
+      <p class="hero-subtitle">Discover thousands of free eBooks across all genres</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="stat-number">{{ books.count|default:"1000+" }}</span>
+          <span class="stat-label">Books Available</span>
         </div>
-      </a>
+        <div class="hero-stat">
+          <span class="stat-number">{{ categories.count|default:"50+" }}</span>
+          <span class="stat-label">Categories</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-number">24/7</span>
+          <span class="stat-label">Access</span>
+        </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Recommended Books Section -->
+  <div class="books-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fas fa-star"></i>
+        Recommended Books
+      </h2>
+      <p class="section-subtitle">Handpicked books just for you</p>
+    </div>
+    <div class="books-grid">
+      {% for book in recommended_books %}
+        <div class="book-card">
+          <a href="{% url 'book_detail' book.slug %}" class="book-link">
+            <div class="book-cover">
+              {% if book.cover_image %}
+                <img src="{{book.cover_image.url}}" alt="{{book.title}}" class="cover-image">
+              {% else %}
+                <div class="no-image">
+                  <i class="fas fa-book"></i>
+                  <span>No Image</span>
+                </div>
+              {% endif %}
+              <div class="book-overlay">
+                <i class="fas fa-eye"></i>
+                <span>View Details</span>
+              </div>
+            </div>
+            <div class="book-info">
+              <h3 class="book-title">{{book.title}}</h3>
+              <p class="book-author">{{book.author}}</p>
+              <div class="book-categories">
+                {% for category in book.category.all|slice:":2" %}
+                  <span class="category-tag">{{category.name}}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </a>
+        </div>
+      {% empty %}
+        <div class="no-books">
+          <i class="fas fa-book-open"></i>
+          <p>No recommended books available yet</p>
+        </div>
       {% endfor %}
     </div>
   </div>
 
+  <!-- Fiction Books Section -->
+  <div class="books-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fas fa-magic"></i>
+        Top Fiction Books
+      </h2>
+      <p class="section-subtitle">Explore imaginative worlds and stories</p>
+    </div>
+    <div class="books-grid">
+      {% for book in fiction_books %}
+        <div class="book-card">
+          <a href="{% url 'book_detail' book.slug %}" class="book-link">
+            <div class="book-cover">
+              {% if book.cover_image %}
+                <img src="{{book.cover_image.url}}" alt="{{book.title}}" class="cover-image">
+              {% else %}
+                <div class="no-image">
+                  <i class="fas fa-book"></i>
+                  <span>No Image</span>
+                </div>
+              {% endif %}
+              <div class="book-overlay">
+                <i class="fas fa-eye"></i>
+                <span>View Details</span>
+              </div>
+            </div>
+            <div class="book-info">
+              <h3 class="book-title">{{book.title}}</h3>
+              <p class="book-author">{{book.author}}</p>
+              <div class="book-categories">
+                {% for category in book.category.all|slice:":2" %}
+                  <span class="category-tag">{{category.name}}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </a>
+        </div>
+      {% empty %}
+        <div class="no-books">
+          <i class="fas fa-book-open"></i>
+          <p>No fiction books available yet</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
 
+  <!-- Business Books Section -->
+  <div class="books-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fas fa-chart-line"></i>
+        Top Business Books
+      </h2>
+      <p class="section-subtitle">Learn from industry experts and leaders</p>
+    </div>
+    <div class="books-grid">
+      {% for book in business_books %}
+        <div class="book-card">
+          <a href="{% url 'book_detail' book.slug %}" class="book-link">
+            <div class="book-cover">
+              {% if book.cover_image %}
+                <img src="{{book.cover_image.url}}" alt="{{book.title}}" class="cover-image">
+              {% else %}
+                <div class="no-image">
+                  <i class="fas fa-book"></i>
+                  <span>No Image</span>
+                </div>
+              {% endif %}
+              <div class="book-overlay">
+                <i class="fas fa-eye"></i>
+                <span>View Details</span>
+              </div>
+            </div>
+            <div class="book-info">
+              <h3 class="book-title">{{book.title}}</h3>
+              <p class="book-author">{{book.author}}</p>
+              <div class="book-categories">
+                {% for category in book.category.all|slice:":2" %}
+                  <span class="category-tag">{{category.name}}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </a>
+        </div>
+      {% empty %}
+        <div class="no-books">
+          <i class="fas fa-book-open"></i>
+          <p>No business books available yet</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
 {% endblock %}
-<!--
 
 
 
