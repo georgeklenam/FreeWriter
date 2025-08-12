@@ -58,6 +58,49 @@ if ! python setup_db.py; then
     fi
 fi
 
+# Check for missing category description field and fix it
+echo "Checking for missing category description field..."
+python -c "
+import os
+import sys
+import django
+sys.path.append(os.path.dirname(os.path.abspath('.')))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'FreeWriter.settings')
+django.setup()
+
+from django.db import connection
+from django.core.management import call_command
+
+try:
+    # Check if category description field exists
+    with connection.cursor() as cursor:
+        cursor.execute('PRAGMA table_info(bookapp_category)')
+        columns = [row[1] for row in cursor.fetchall()]
+        
+        if 'description' not in columns:
+            print('Category description field missing. Running migration...')
+            # Run the specific migration for category description
+            call_command('migrate', 'bookapp', '0005_add_category_description', '--noinput')
+            print('Category description field added successfully!')
+        else:
+            print('Category description field already exists.')
+            
+except Exception as e:
+    print(f'Error checking category field: {e}')
+    # Try to run all pending migrations
+    try:
+        print('Attempting to run all pending migrations...')
+        call_command('migrate', '--noinput')
+        print('Migrations completed successfully!')
+    except Exception as migrate_error:
+        print(f'Migration failed: {migrate_error}')
+        exit(1)
+"
+if [ $? -ne 0 ]; then
+    echo "Failed to fix category description field. Exiting."
+    exit 1
+fi
+
 # Create superuser if it doesn't exist
 echo "Checking for superuser..."
 python manage.py create_superuser
