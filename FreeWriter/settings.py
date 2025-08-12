@@ -25,9 +25,15 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 SECRET_KEY = '8drr$$hzghoe!u3sfgx@b3(8j^wg&50*a@n&@^2^3u-r&a2pe0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = ['*']
+
+# Security settings for production
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
 
 
 # Application definition

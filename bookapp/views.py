@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import os
 import re
+from django.utils import timezone
 
 # Create your views here.
 
@@ -157,3 +158,47 @@ def upload_book(request):
         form = BookUploadForm()
     
     return render(request, 'upload_book.html', {'form': form})
+
+def media_test(request):
+    """Simple view to test media file serving"""
+    from django.http import HttpResponse
+    import os
+    
+    # Check if media directory exists
+    media_dir = os.path.join(settings.BASE_DIR, 'media')
+    img_dir = os.path.join(media_dir, 'img')
+    pdf_dir = os.path.join(media_dir, 'pdf')
+    
+    response = f"""
+    <h1>Media Test</h1>
+    <p>BASE_DIR: {settings.BASE_DIR}</p>
+    <p>Media directory exists: {os.path.exists(media_dir)}</p>
+    <p>Image directory exists: {os.path.exists(img_dir)}</p>
+    <p>PDF directory exists: {os.path.exists(pdf_dir)}</p>
+    """
+    
+    if os.path.exists(img_dir):
+        img_files = os.listdir(img_dir)
+        response += f"<p>Image files: {img_files}</p>"
+    
+    if os.path.exists(pdf_dir):
+        pdf_files = os.listdir(pdf_dir)
+        response += f"<p>PDF files: {pdf_files}</p>"
+    
+    # Check books in database
+    books = Book.objects.all()
+    response += f"<p>Books in database: {books.count()}</p>"
+    for book in books:
+        response += f"<p>Book: {book.title} - Cover: {book.cover_image if book.cover_image else 'None'}</p>"
+    
+    return HttpResponse(response)
+
+def health_check(request):
+    """Simple health check endpoint for monitoring"""
+    from django.http import JsonResponse
+    return JsonResponse({
+        'status': 'healthy',
+        'message': 'FreeWriter is running',
+        'books_count': Book.objects.count(),
+        'timestamp': timezone.now().isoformat()
+    })

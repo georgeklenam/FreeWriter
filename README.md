@@ -209,6 +209,42 @@ docker stop freewriter-app
 docker rm freewriter-app
 ```
 
+### Remote Server Deployment
+
+For deploying on a remote server:
+
+1. **Upload your project** to the server
+2. **Run the deployment script:**
+
+   ```bash
+   chmod +x deploy.sh
+   ./deploy.sh
+   ```
+
+3. **Or deploy manually:**
+
+   ```bash
+   # Build and run in production mode
+   docker build -t freewriter .
+   docker run -d \
+     --name freewriter-app \
+     -p 8000:8000 \
+     -v $(pwd)/media:/app/media \
+     -e DEBUG=False \
+     --restart unless-stopped \
+     freewriter
+   ```
+
+4. **Check the application:**
+
+   ```bash
+   # View logs
+   docker logs freewriter-app
+   
+   # Check status
+   docker ps
+   ```
+
 ## Troubleshooting
 
 ### Common Installation Issues
