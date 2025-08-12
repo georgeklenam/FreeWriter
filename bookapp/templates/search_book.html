@@ -12,7 +12,7 @@
             <i class="fas fa-search"></i>
             Search Books
         </h1>
-        <p class="page-subtitle">Find the perfect book with our advanced search and filters</p>
+        <p class="page-subtitle">Discover your next favorite book with our intelligent search and powerful filtering system</p>
     </div>
     
     <!-- Search Form with Filters -->
@@ -36,7 +36,7 @@
                 
                 <div class="filter-group">
                     <label for="category-filter" class="filter-label">
-                        <i class="fas fa-tag"></i>
+                        <i class="fas fa-filter"></i>
                         Category
                     </label>
                     <select id="category-filter" name="category" class="filter-select">
@@ -106,7 +106,7 @@
                         {% endif %}
                         {% if selected_category %}
                             <span class="filter-tag">
-                                <i class="fas fa-tag"></i>
+                                <i class="fas fa-filter"></i>
                                 {{ selected_category }}
                                 <a href="?{% if query %}name_of_book={{ query }}{% endif %}{% if selected_author %}{% if query %}&{% endif %}author={{ selected_author }}{% endif %}" class="remove-filter">
                                     <i class="fas fa-times"></i>
@@ -165,24 +165,31 @@
                 <div class="no-books">
                     <i class="fas fa-search"></i>
                     <h3>No Books Found</h3>
-                    <p>Try adjusting your search terms or filters to find what you're looking for.</p>
+                    <p>Don't worry! Try adjusting your search terms or filters. Sometimes a broader search reveals hidden gems.</p>
                     <div class="no-books-actions">
-                        <a href="{% url 'book_search' %}" class="btn-clear">Clear All Filters</a>
-                        <a href="{% url 'all_books' %}" class="btn-browse">Browse All Books</a>
+                        <a href="{% url 'book_search' %}" class="btn-clear">
+                            <i class="fas fa-times"></i>
+                            Clear All Filters
+                        </a>
+                        <a href="{% url 'all_books' %}" class="btn-browse">
+                            <i class="fas fa-book"></i>
+                            Browse All Books
+                        </a>
                     </div>
                 </div>
             {% else %}
                 <div class="search-instructions">
                     <i class="fas fa-search"></i>
-                    <h3>Start Your Search</h3>
-                    <p>Enter a search term above to find books by title, author, or summary. Use the filters to narrow down your results.</p>
+                    <h3>Ready to Discover?</h3>
+                    <p>Start your journey by entering a search term above. Find books by title, author, or summary, and use our smart filters to discover exactly what you're looking for.</p>
                     <div class="search-tips">
-                        <h4>Search Tips:</h4>
+                        <h4>💡 Pro Tips for Better Results:</h4>
                         <ul>
-                            <li>Try searching by book title or author name</li>
-                            <li>Use category filters to find books in specific genres</li>
-                            <li>Combine multiple filters for more precise results</li>
-                            <li>Search is not case-sensitive</li>
+                            <li><strong>Title Search:</strong> Try searching by book title or partial title</li>
+                            <li><strong>Author Search:</strong> Search by author name for all their works</li>
+                            <li><strong>Smart Filtering:</strong> Combine category and author filters for precision</li>
+                            <li><strong>Case Insensitive:</strong> Your search works regardless of capitalization</li>
+                            <li><strong>Partial Matches:</strong> You don't need to type the complete title</li>
                         </ul>
                     </div>
                 </div>

@@ -123,6 +123,8 @@
     font-size: 0.9rem;
     background: #f8fafc;
     transition: all 0.3s ease;
+    height: 44px;
+    box-sizing: border-box;
 }
 
 .search-input:focus {
@@ -135,7 +137,9 @@
 
 .search-btn {
     position: absolute;
-    right: 8px;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     border: none;
@@ -147,10 +151,11 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
+    z-index: 2;
 }
 
 .search-btn:hover {
-    transform: scale(1.1);
+    transform: translateY(-50%) scale(1.1);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 

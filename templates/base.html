@@ -37,12 +37,6 @@
       <div class="nav-menu" id="navMenu">
         <ul class="nav-links">
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'home' %}">
-              <i class="fas fa-home"></i>
-              Home
-            </a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link" href="{% url 'all_books' %}">
               <i class="fas fa-book"></i>
               Books
@@ -176,7 +170,7 @@
         
         <div class="footer-section">
           <h4 class="footer-heading">
-            <i class="fas fa-tags"></i>
+            <i class="fas fa-th-large"></i>
             Popular Categories
           </h4>
           <ul class="footer-links">
@@ -266,66 +260,92 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Newsletter functionality
-    const newsletterForm = document.querySelector('.newsletter-form');
-    const newsletterEmail = document.getElementById('newsletterEmail');
-    const newsletterBtn = document.getElementById('newsletterBtn');
-    const newsletterMessage = document.getElementById('newsletterMessage');
-    
-    if (newsletterForm && newsletterEmail && newsletterBtn && newsletterMessage) {
-        newsletterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = newsletterEmail.value.trim();
-            if (!email) {
-                showNewsletterMessage('Please enter your email address', 'error');
-                return;
-            }
-            
-            // Disable button and show loading state
-            newsletterBtn.disabled = true;
-            newsletterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            
-            // Send subscription request
-            fetch('{% url "newsletter_subscribe" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: email })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNewsletterMessage(data.message, 'success');
-                    newsletterEmail.value = '';
-                } else {
-                    showNewsletterMessage(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                showNewsletterMessage('An error occurred. Please try again.', 'error');
-            })
-            .finally(() => {
-                // Re-enable button
-                newsletterBtn.disabled = false;
-                newsletterBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-            });
-        });
-    }
-    
-    function showNewsletterMessage(message, type) {
-        newsletterMessage.textContent = message;
-        newsletterMessage.className = `newsletter-message ${type}`;
-        newsletterMessage.style.display = 'block';
-        
-        // Hide message after 5 seconds
-        setTimeout(() => {
-            newsletterMessage.style.display = 'none';
-        }, 5000);
-    }
 });
 </script>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        // Newsletter functionality
+        const newsletterForm = document.querySelector('.newsletter-form');
+        const newsletterEmail = document.getElementById('newsletterEmail');
+        const newsletterBtn = document.getElementById('newsletterBtn');
+        const newsletterMessage = document.getElementById('newsletterMessage');
+
+        if (newsletterForm && newsletterEmail && newsletterBtn && newsletterMessage) {
+            newsletterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = newsletterEmail.value.trim();
+                
+                if (!email) {
+                    showToast('Please enter your email address', 'error');
+                    return;
+                }
+
+                newsletterBtn.disabled = true;
+                newsletterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                fetch('{% url "newsletter_subscribe" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({email: email})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        newsletterEmail.value = '';
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('An error occurred. Please try again.', 'error');
+                })
+                .finally(() => {
+                    newsletterBtn.disabled = false;
+                    newsletterBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                });
+            });
+        }
+
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icon = type === 'success' ? 'fas fa-check-circle' : 
+                        type === 'error' ? 'fas fa-exclamation-circle' : 
+                        'fas fa-info-circle';
+            
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="${icon}"></i>
+                    <span class="toast-message">${message}</span>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+
+        function showNewsletterMessage(message, type) {
+            showToast(message, type);
+        }
+    </script>
 </body>
 </html>
