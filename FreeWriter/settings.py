@@ -33,7 +33,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',  # Must come before django.contrib.admin
+    'jazzmin',  # Must be before django.contrib.admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add after SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -129,6 +130,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# WhiteNoise configuration for static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Jazzmin Configuration
@@ -140,19 +144,19 @@ JAZZMIN_SETTINGS = {
     "site_header": "FreeWriter",
     
     # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
-    "brand": "FreeWriter",
+    "site_brand": "FreeWriter",
     
     # Logo to use for your site, must be present in static files, used for brand on top left
-    "brand_logo": None,
+    "site_logo": None,
     
-    # Logo to use for your site, must be present in static files, used for login form logo (defaults to login_logo)
+    # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
     "login_logo": None,
     
     # Logo to use for login form in dark themes (defaults to login_logo)
     "login_logo_dark": None,
     
     # CSS classes that are applied to the logo above
-    "brand_logo_class": "brand-image img-circle elevation-3",
+    "site_logo_classes": "img-circle",
     
     # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
     "site_icon": None,
@@ -163,8 +167,9 @@ JAZZMIN_SETTINGS = {
     # Copyright on the footer
     "copyright": "FreeWriter Ltd",
     
-    # The model admin to search from the search bar, search bar omitted if excluded
-    "search_model": "auth.User",
+    # List of model admins to search from the search bar, search bar omitted if excluded
+    # If you want to use a single search field you dont need to use a list, you can use a simple string 
+    "search_model": ["bookapp.Book", "bookapp.Category"],
     
     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
     "user_avatar": None,
@@ -196,7 +201,6 @@ JAZZMIN_SETTINGS = {
         "auth.Group": "fas fa-users",
         "bookapp.Book": "fas fa-book",
         "bookapp.Category": "fas fa-tags",
-        "bookapp.BookSearch": "fas fa-search",
     },
     
     # Custom icons for side menu apps/models when collapsed
@@ -206,7 +210,6 @@ JAZZMIN_SETTINGS = {
         "auth.Group": "fas fa-users",
         "bookapp.Book": "fas fa-book",
         "bookapp.Category": "fas fa-tags",
-        "bookapp.BookSearch": "fas fa-search",
     },
     
     # Icons that are used when one is not manually specified
@@ -225,9 +228,8 @@ JAZZMIN_SETTINGS = {
     # Relative paths to custom CSS/JS scripts (must be present in static files)
     "custom_css": None,
     "custom_js": None,
-    
     # Whether to show the UI customizer on the sidebar
-    "show_ui_builder": True,
+    "show_ui_builder": False,
     
     ###############
     # Change view #
@@ -246,7 +248,6 @@ JAZZMIN_SETTINGS = {
     },
 }
 
-# Jazzmin UI Customizer
 JAZZMIN_UI_TWEAKS = {
     "navbar_small_text": False,
     "footer_small_text": False,

@@ -22,8 +22,12 @@ if Book.objects.count() == 0:
     call_command('create_books_from_images')
 else:
     print(f'Found {Book.objects.count()} books in database')
+    # Only fix missing images and PDFs for existing books
+    print('Fixing missing images and PDFs for existing books...')
+    call_command('fix_images')
+    call_command('fix_pdfs')
 "
 
-# Start the server
-echo "Starting Django development server..."
-python manage.py runserver 0.0.0.0:8000
+# Start Gunicorn server
+echo "Starting Gunicorn server..."
+exec gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 FreeWriter.wsgi:application

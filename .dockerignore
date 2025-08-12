@@ -25,18 +25,15 @@ coverage.xml
 .hypothesis
 
 # Virtual environments
+.env
 .venv
+env/
 venv/
 ENV/
-env/
+env.bak/
+venv.bak/
 
-# Django
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
@@ -52,7 +49,19 @@ db.sqlite3-journal
 ehthumbs.db
 Thumbs.db
 
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Static files (will be collected)
+staticfiles/
+
+# Documentation
+README.md
+*.md
+
 # Docker
-Dockerfile
-docker-compose.yml
+Dockerfile*
 .dockerignore

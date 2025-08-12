@@ -5,10 +5,10 @@ import os
 import re
 
 class Command(BaseCommand):
-    help = 'Fix missing PDF files for existing books'
+    help = 'Fix missing PDF files for existing books without creating duplicates'
 
     def handle(self, *args, **options):
-        self.stdout.write('Fixing missing PDF files...')
+        self.stdout.write('Fixing missing PDF files for existing books...')
         
         # Get all PDF files from media/pdf directory
         pdf_dir = os.path.join('media', 'pdf')
@@ -24,17 +24,19 @@ class Command(BaseCommand):
         self.stdout.write(f'Found {books.count()} books in database')
         
         fixed_count = 0
+        used_pdfs = set()
         
         for book in books:
             self.stdout.write(f'Processing book: {book.title}')
             
-            # Check if book already has a PDF
-            if book.pdf:
+            # Skip if book already has a valid PDF
+            if book.pdf and os.path.exists(book.pdf.path):
                 self.stdout.write(f'  - Book already has PDF: {book.pdf.name}')
+                used_pdfs.add(os.path.basename(book.pdf.name))
                 continue
             
             # Try to find a matching PDF for this book
-            matching_pdf = self.find_matching_pdf(book.title, pdf_files)
+            matching_pdf = self.find_matching_pdf(book.title, pdf_files, used_pdfs)
             
             if matching_pdf:
                 pdf_path = os.path.join(pdf_dir, matching_pdf)
@@ -43,20 +45,21 @@ class Command(BaseCommand):
                 with open(pdf_path, 'rb') as pdf_file:
                     book.pdf.save(matching_pdf, File(pdf_file), save=True)
                 self.stdout.write(f'  - Assigned PDF: {matching_pdf}')
+                used_pdfs.add(matching_pdf)
                 fixed_count += 1
             else:
                 self.stdout.write(f'  - No matching PDF found for: {book.title}')
-                # Add PDFDrive.com link as fallback
-                pdfdrive_url = self.generate_pdfdrive_url(book.title)
-                book.pdf_url = pdfdrive_url
-                book.save()
-                self.stdout.write(f'  - Added PDFDrive link: {pdfdrive_url}')
-                fixed_count += 1
+                # Add Welib.org link as fallback if not already present
+                if not book.pdf_url:
+                    pdfdrive_url = self.generate_pdfdrive_url(book.title)
+                    book.pdf_url = pdfdrive_url
+                    book.save()
+                    self.stdout.write(f'  - Added Welib.org link: {pdfdrive_url}')
+                    fixed_count += 1
         
         self.stdout.write(self.style.SUCCESS(f'Fixed {fixed_count} PDF references!'))
         
         # Show remaining unused PDFs
-        used_pdfs = [book.pdf.name.split('/')[-1] for book in Book.objects.filter(pdf__isnull=False)]
         unused_pdfs = [pdf for pdf in pdf_files if pdf not in used_pdfs]
         
         if unused_pdfs:
@@ -66,7 +69,7 @@ class Command(BaseCommand):
             if len(unused_pdfs) > 10:
                 self.stdout.write(f'  ... and {len(unused_pdfs) - 10} more')
 
-    def find_matching_pdf(self, book_title, pdf_files):
+    def find_matching_pdf(self, book_title, pdf_files, used_pdfs):
         """Find the best matching PDF for a book title"""
         book_title_lower = book_title.lower()
         
@@ -74,8 +77,10 @@ class Command(BaseCommand):
         clean_title = re.sub(r'\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by)\b', '', book_title_lower)
         clean_title = re.sub(r'[^\w\s]', '', clean_title).strip()
         
-        # Try exact matches first
-        for pdf in pdf_files:
+        # Try exact matches first (excluding already used PDFs)
+        available_pdfs = [pdf for pdf in pdf_files if pdf not in used_pdfs]
+        
+        for pdf in available_pdfs:
             pdf_lower = pdf.lower()
             pdf_clean = re.sub(r'[^\w\s]', '', pdf_lower).replace('_', ' ').replace('-', ' ')
             
@@ -86,27 +91,49 @@ class Command(BaseCommand):
         
         # Handle specific cases
         if 'random walk' in book_title_lower:
-            return 'A_Random_Walk_Down_Wall_Street.pdf'
+            for pdf in available_pdfs:
+                if 'random walk' in pdf.lower():
+                    return pdf
         elif 'oliver' in book_title_lower:
-            return 'oliver-twist.pdf'
+            for pdf in available_pdfs:
+                if 'oliver' in pdf.lower():
+                    return pdf
         elif 'serial killer' in book_title_lower:
-            return 'My_Sister_the_Serial_Killer.pdf'
+            for pdf in available_pdfs:
+                if 'serial killer' in pdf.lower():
+                    return pdf
         elif 'manga guide' in book_title_lower:
-            return 'The_Manga_Guide_to_Molecular_Biology__PDFDrive_.pdf'
+            for pdf in available_pdfs:
+                if 'manga guide' in pdf.lower():
+                    return pdf
         elif 'manga master' in book_title_lower:
-            return 'Mastering_Manga_How_to_Draw_Manga_Faces__PDFDrive_.pdf'
+            for pdf in available_pdfs:
+                if 'manga master' in pdf.lower():
+                    return pdf
         elif 'linux' in book_title_lower:
-            return 'Linux_Tips_Tricks_PPS__Hacks_Vol_3.pdf'
+            for pdf in available_pdfs:
+                if 'linux' in pdf.lower():
+                    return pdf
         elif 'hacking' in book_title_lower:
-            return 'The_Basics_Of_Hacking_And_Penetration_Testing__Ethical_Hacking_And_Penetration_Testing.pdf'
+            for pdf in available_pdfs:
+                if 'hacking' in pdf.lower():
+                    return pdf
         elif 'intelligent' in book_title_lower:
-            return 'The_Intelligent_Investor.pdf'
+            for pdf in available_pdfs:
+                if 'intelligent' in pdf.lower():
+                    return pdf
         elif 'science' in book_title_lower:
-            return 'The_Handy_Science_Answer_Book_The_Handy_Answer_Book_Series____PDFDrive_.pdf'
+            for pdf in available_pdfs:
+                if 'science' in pdf.lower():
+                    return pdf
         elif 'penis' in book_title_lower:
-            return 'Penis_Exercises_A_Healthy_Book_for_Enlargement_Enhancement_Hardness__Health__PDFDrive_.pdf'
+            for pdf in available_pdfs:
+                if 'penis' in pdf.lower():
+                    return pdf
         elif 'purple' in book_title_lower:
-            return 'Purple_Hibiscus.pdf'
+            for pdf in available_pdfs:
+                if 'purple' in pdf.lower():
+                    return pdf
         
         return None
 

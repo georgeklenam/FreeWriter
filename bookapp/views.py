@@ -116,6 +116,8 @@ def login_page(request):
 def logout_user (request):
     logout(request)
     request.session.flush()
+    #request.user = AnonymousUser
+    # Redirect to a success page.
     return redirect('home')
 
 @login_required(login_url='login')

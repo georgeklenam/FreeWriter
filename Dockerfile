@@ -1,9 +1,10 @@
-# Simple Dockerfile for FreeWriter
+# Dockerfile for FreeWriter
 FROM python:3.10-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=FreeWriter.settings
 
 # Set work directory
 WORKDIR /app
@@ -31,6 +32,9 @@ RUN chmod +x startup.sh
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
+
+# Create logs directory
+RUN mkdir -p /app/logs
 
 # Expose port
 EXPOSE 8000

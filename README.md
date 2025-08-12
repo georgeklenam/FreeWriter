@@ -10,6 +10,8 @@ A Django-based web application for managing and sharing PDF books and eBooks. Fr
 - **Category System**: Organize books by genres and categories
 - **Responsive Design**: Bootstrap 5-based modern UI
 - **File Handling**: Support for image uploads (covers) and PDF files
+- **Beautiful Admin Interface**: Jazzmin-powered Django admin with modern UI
+- **Production Ready**: Gunicorn and WhiteNoise for production deployment
 
 ## Technology Stack
 
@@ -19,6 +21,8 @@ A Django-based web application for managing and sharing PDF books and eBooks. Fr
 - **Python Version**: 3.10 (recommended), 3.8-3.10 supported
 - **Image Processing**: Pillow 10.1.0
 - **Admin Interface**: Django Jazzmin 2.6.0
+- **Production Server**: Gunicorn 21.2.0
+- **Static Files**: WhiteNoise 6.6.0
 
 ## Installation
 
@@ -40,41 +44,14 @@ A Django-based web application for managing and sharing PDF books and eBooks. Fr
 3. **Run the container:**
 
    ```bash
-   docker run -p 8000:8000 -v $(pwd):/app freewriter
+   docker run -p 8000:8000 -v $(pwd)/media:/app/media freewriter
    ```
 
 4. **Access the application:**
    - Open your browser and go to `http://localhost:8000`
-
-### Option 2: Production Deployment
-
-For production deployment with Gunicorn and WhiteNoise:
-
-1. **Build production image:**
-
-   ```bash
-   docker build -f Dockerfile.prod -t freewriter-prod .
-   ```
-
-2. **Run production container:**
-
-   ```bash
-   docker run -d \
-     --name freewriter-prod \
-     -p 8000:8000 \
-     -v $(pwd)/media:/app/media \
-     -v $(pwd)/logs:/app/logs \
-     -e SECRET_KEY="your-secret-key-here" \
-     freewriter-prod
-   ```
-
-3. **Access the application:**
-   - Main site: `http://localhost:8000`
    - Admin panel: `http://localhost:8000/admin`
 
-**For detailed production deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
-
-### Option 3: Local Development
+### Option 2: Local Development
 
 1. **Clone the repository:**
 
@@ -87,7 +64,7 @@ For production deployment with Gunicorn and WhiteNoise:
 
    ```bash
    python -m venv .venv
-   .venv\Scripts\activate # On mac:  source .venv/bin/activate
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 3. **Install dependencies:**
@@ -144,6 +121,9 @@ FreeWriter/
 - **Search**: Search for specific books by title
 - **Categories**: Filter books by genre/category
 - **User Account**: Register/login to access additional features
+- **Admin Panel**: Access the beautiful Jazzmin admin interface at `/admin/`
+  - Username: `admin`
+  - Password: `f001`
 
 ## Loading Sample Data
 
@@ -174,27 +154,41 @@ When using Docker, the container automatically:
 - Creates a superuser with credentials:
   - **Username**: `admin`
   - **Password**: `f001`
-- Creates books from existing images in your media folder
-- Assigns PDF files when available
+- Creates books from existing images in your media folder (if no books exist)
+- Fixes missing images and PDFs for existing books (prevents duplicates)
 - Adds Welib.org search links as fallback for missing PDFs
-- Starts the Django development server
+- Starts the Gunicorn server
 
 You can access the admin panel at `/admin/` using these credentials.
 
 ## Troubleshooting
 
+### Images Not Displaying
+
+If images are not showing on the website:
+
+1. **Check Media Files**: Ensure the `media/` directory has proper read permissions
+2. **Verify File Permissions**: Ensure the `media/` directory has proper read permissions
+3. **Check Database**: Verify that books have cover_image fields populated
+4. **Django Settings**: Confirm `MEDIA_URL` and `MEDIA_ROOT` are properly configured
+
 ### Common Issues
 
-- **No Books Showing**: Run `python manage.py create_books_from_images` to create books from your media folder
-- **Broken Images**: Run `python manage.py fix_images` to fix broken image references
-- **Missing PDFs**: Run `python manage.py fix_pdfs` to fix missing PDF files and add Welib.org links
-- **Link Existing Images**: Run `python manage.py link_existing_images` to link real images from media folder
-- **Template Errors**: Check that all templates extend `base.html` (not `templates/base.html`)
-- **Static Files**: Run `python manage.py collectstatic` if using production settings
+- **No Books Showing**: Books are automatically created from your media folder when using Docker
+- **Broken Images**: Images are automatically fixed and linked when using Docker
+- **Missing PDFs**: PDFs are automatically assigned and Welib.org links added when using Docker
+- **Template Errors**: Check that all templates extend `base.html`
+- **Static Files**: Run `python manage.py collectstatic` if needed
+
+**Note**: For local development, you may need to run these commands manually:
+
+- `python manage.py create_books_from_images`
+- `python manage.py fix_images`
+- `python manage.py fix_pdfs`
 
 ## Docker Support
 
-The application is containerized with a simple Dockerfile for easy deployment.
+The application is containerized with a single Dockerfile using Gunicorn for both development and production.
 
 ### Docker Commands
 
@@ -203,10 +197,10 @@ The application is containerized with a simple Dockerfile for easy deployment.
 docker build -t freewriter .
 
 # Run the container
-docker run -p 8000:8000 -v $(pwd):/app freewriter
+docker run -p 8000:8000 -v $(pwd)/media:/app/media freewriter
 
 # Run in background
-docker run -d -p 8000:8000 -v $(pwd):/app --name freewriter-app freewriter
+docker run -d -p 8000:8000 -v $(pwd)/media:/app/media --name freewriter-app freewriter
 
 # Stop the container
 docker stop freewriter-app
@@ -215,19 +209,19 @@ docker stop freewriter-app
 docker rm freewriter-app
 ```
 
+## Troubleshooting
+
 ### Common Installation Issues
 
 1. **Docker build errors**: Ensure Docker is properly installed and running
-2. **Pillow installation errors**: Try using Python 3.9.18 or use the simple requirements
+2. **Pillow installation errors**: Try using Python 3.9.18 for best compatibility
 3. **Version conflicts**: Use `requirements.txt` for dependencies
-4. **Python version**: Python 3.9.18 is recommended for best compatibility
+4. **Python version**: Python 3.10 is recommended for best compatibility
 
 ### Alternative Solutions
 
 - Use Python 3.9.18 for best compatibility
-- Use `requirements.txt` for dependencies
 - Use Docker to avoid environment issues
-- Check the `DEPLOYMENT.md` for detailed troubleshooting
 
 ## Contributing
 
