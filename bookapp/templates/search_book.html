@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-<title>FreeWriter | Searched Books</title>
+<title>FreeWriter | Search Books</title>
 {% endblock %}
 
 {% block content %}
@@ -10,17 +10,125 @@
     <div class="page-header">
         <h1 class="page-title">
             <i class="fas fa-search"></i>
-            Search Results
+            Search Books
         </h1>
-        <p class="page-subtitle">Books matching your search criteria</p>
-        {% if searched_books %}
-        <div class="books-count">
-            <span class="count-number">{{searched_books.count}}</span>
-            <span class="count-label">Books Found</span>
-        </div>
-        {% endif %}
+        <p class="page-subtitle">Find the perfect book with our advanced search and filters</p>
     </div>
     
+    <!-- Search Form with Filters -->
+    <div class="search-filters-section">
+        <form method="POST" action="{% url 'book_search' %}" class="search-filters-form">
+            {% csrf_token %}
+            <div class="search-filters-grid">
+                <div class="search-input-group">
+                    <label for="search-query" class="filter-label">
+                        <i class="fas fa-search"></i>
+                        Search Query
+                    </label>
+                    <input type="text" 
+                           id="search-query" 
+                           name="name_of_book" 
+                           class="search-input" 
+                           placeholder="Search by title, author, or summary..." 
+                           value="{{ query|default:'' }}"
+                           required>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="category-filter" class="filter-label">
+                        <i class="fas fa-tag"></i>
+                        Category
+                    </label>
+                    <select id="category-filter" name="category" class="filter-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.name }}" 
+                                    {% if selected_category == category.name %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="author-filter" class="filter-label">
+                        <i class="fas fa-user"></i>
+                        Author
+                    </label>
+                    <select id="author-filter" name="author" class="filter-select">
+                        <option value="">All Authors</option>
+                        {% for author in authors %}
+                            <option value="{{ author }}" 
+                                    {% if selected_author == author %}selected{% endif %}>
+                                {{ author }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="search-actions">
+                    <button type="submit" class="search-btn-primary">
+                        <i class="fas fa-search"></i>
+                        Search
+                    </button>
+                    <a href="{% url 'book_search' %}" class="clear-filters-btn">
+                        <i class="fas fa-times"></i>
+                        Clear Filters
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Search Results -->
+    {% if query or selected_category or selected_author %}
+        <div class="search-results-header">
+            <h2 class="results-title">
+                <i class="fas fa-list"></i>
+                Search Results
+            </h2>
+            {% if searched_books %}
+                <div class="results-count">
+                    <span class="count-number">{{ searched_books.count }}</span>
+                    <span class="count-label">Books Found</span>
+                </div>
+                {% if query or selected_category or selected_author %}
+                    <div class="active-filters">
+                        <span class="filters-label">Active Filters:</span>
+                        {% if query %}
+                            <span class="filter-tag">
+                                <i class="fas fa-search"></i>
+                                "{{ query }}"
+                                <a href="?{% if selected_category %}category={{ selected_category }}{% endif %}{% if selected_author %}{% if selected_category %}&{% endif %}author={{ selected_author }}{% endif %}" class="remove-filter">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </span>
+                        {% endif %}
+                        {% if selected_category %}
+                            <span class="filter-tag">
+                                <i class="fas fa-tag"></i>
+                                {{ selected_category }}
+                                <a href="?{% if query %}name_of_book={{ query }}{% endif %}{% if selected_author %}{% if query %}&{% endif %}author={{ selected_author }}{% endif %}" class="remove-filter">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </span>
+                        {% endif %}
+                        {% if selected_author %}
+                            <span class="filter-tag">
+                                <i class="fas fa-user"></i>
+                                {{ selected_author }}
+                                <a href="?{% if query %}name_of_book={{ query }}{% endif %}{% if selected_category %}{% if query %}&{% endif %}category={{ selected_category }}{% endif %}" class="remove-filter">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <!-- Books Grid -->
     <div class="books-grid">
         {% if searched_books %}
             {% for book in searched_books %}
@@ -53,12 +161,32 @@
             </div>
             {% endfor %}
         {% else %}
-            <div class="no-books">
-                <i class="fas fa-search"></i>
-                <h3>No Books Found</h3>
-                <p>Try adjusting your search terms or check back later.</p>
-                <a href="{% url 'home' %}" class="btn-home">Go to Home</a>
-            </div>
+            {% if query or selected_category or selected_author %}
+                <div class="no-books">
+                    <i class="fas fa-search"></i>
+                    <h3>No Books Found</h3>
+                    <p>Try adjusting your search terms or filters to find what you're looking for.</p>
+                    <div class="no-books-actions">
+                        <a href="{% url 'book_search' %}" class="btn-clear">Clear All Filters</a>
+                        <a href="{% url 'all_books' %}" class="btn-browse">Browse All Books</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="search-instructions">
+                    <i class="fas fa-search"></i>
+                    <h3>Start Your Search</h3>
+                    <p>Enter a search term above to find books by title, author, or summary. Use the filters to narrow down your results.</p>
+                    <div class="search-tips">
+                        <h4>Search Tips:</h4>
+                        <ul>
+                            <li>Try searching by book title or author name</li>
+                            <li>Use category filters to find books in specific genres</li>
+                            <li>Combine multiple filters for more precise results</li>
+                            <li>Search is not case-sensitive</li>
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 </div>

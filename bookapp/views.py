@@ -14,6 +14,7 @@ import os
 import re
 from django.utils import timezone
 import json
+from django.db import models
 
 # Create your views here.
 
@@ -84,8 +85,50 @@ def book_detail(request, slug):
 	return render(request, 'book_detail.html', {'book': book, 'similar_books': similar_books})
 
 def search_book(request):
-	searched_books = Book.objects.filter(title__icontains = request.POST.get('name_of_book'))
-	return render(request, 'search_book.html', {'searched_books':searched_books})
+    """Enhanced search with filters"""
+    if request.method == 'POST':
+        query = request.POST.get('name_of_book', '')
+        category_filter = request.POST.get('category', '')
+        author_filter = request.POST.get('author', '')
+    else:
+        # Handle GET requests for filter removal
+        query = request.GET.get('name_of_book', '')
+        category_filter = request.GET.get('category', '')
+        author_filter = request.GET.get('author', '')
+    
+    # Start with all books
+    books = Book.objects.all()
+    
+    # Apply search filters
+    if query:
+        books = books.filter(
+            models.Q(title__icontains=query) |
+            models.Q(author__icontains=query) |
+            models.Q(summary__icontains=query)
+        )
+    
+    if category_filter:
+        books = books.filter(category__name__icontains=category_filter)
+    
+    if author_filter:
+        books = books.filter(author__icontains=author_filter)
+    
+    # Get all categories for filter dropdown
+    categories = Category.objects.all()
+    
+    # Get unique authors for filter dropdown
+    authors = Book.objects.values_list('author', flat=True).distinct()
+    
+    context = {
+        'searched_books': books,
+        'query': query,
+        'categories': categories,
+        'authors': authors,
+        'selected_category': category_filter,
+        'selected_author': author_filter,
+    }
+    
+    return render(request, 'search_book.html', context)
 
 def register_page(request):
 	register_form = CreateUserForm()
@@ -260,3 +303,7 @@ def terms_of_service(request):
 def cookie_policy(request):
     """Cookie Policy page"""
     return render(request, 'cookie_policy.html')
+
+def about(request):
+    """About page"""
+    return render(request, 'about.html')

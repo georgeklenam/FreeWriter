@@ -1,14 +1,14 @@
 from .models import Category
 from .forms import BookSearchForm
+from .utils import get_category_icon
 
 def category_links(request):
-    category = Category.objects.all()
-    return {'categories': category}
+    categories = Category.objects.all()
+    # Add icons to each category
+    for category in categories:
+        category.icon = get_category_icon(category.name)
+    return {'categories': categories}
 
 def book_search(request):
-    search_form = BookSearchForm
-    if request.method == 'POST':
-        search_form = BookSearchForm(request.POST)
-        if search_form.is_valid():
-            search_form.save()
-    return{'search_form': search_form}
+    search_form = BookSearchForm()
+    return {'search_form': search_form}

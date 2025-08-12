@@ -16,6 +16,8 @@
     <link rel = 'stylesheet' href ="{% static 'css/auth.css' %}">
     <link rel = 'stylesheet' href ="{% static 'css/modern-navbar.css' %}">
     <link rel = 'stylesheet' href ="{% static 'css/modern-book-cards.css' %}">
+    <link rel = 'stylesheet' href ="{% static 'css/about.css' %}">
+    <link rel = 'stylesheet' href ="{% static 'css/search.css' %}">
     <link rel = 'stylesheet' href = "{% static 'uikit/css/uikit.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -46,13 +48,19 @@
               Books
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'about' %}">
+              <i class="fas fa-info-circle"></i>
+              About
+            </a>
+          </li>
         </ul>
         
         <div class="nav-search">
           <form method="POST" action="{% url 'book_search' %}" class="search-form">
             {% csrf_token %}
             <div class="search-input-group">
-              {{search_form.name_of_book}}
+              <input type="text" name="name_of_book" class="search-input" placeholder="Search for books..." required>
               <button type="submit" class="search-btn">
                 <i class="fas fa-search"></i>
               </button>
@@ -104,7 +112,7 @@
     <div class="category-container">
       {% for category in categories %}
         <a class="category-btn" href="{% url 'category_detail' category.slug %}">
-          <i class="fas fa-tag"></i>
+          <i class="{{category.icon}}"></i>
           {{category.name}}
         </a>
       {% endfor %}
@@ -158,6 +166,7 @@
           <ul class="footer-links">
             <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
             <li><a href="{% url 'all_books' %}"><i class="fas fa-book"></i> All Books</a></li>
+            <li><a href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a></li>
             {% if user.is_authenticated %}
               <li><a href="{% url 'upload_book' %}"><i class="fas fa-upload"></i> Upload Book</a></li>
             {% endif %}
