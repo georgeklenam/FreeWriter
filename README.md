@@ -6,9 +6,9 @@ A Django-based web application for managing and sharing PDF books and eBooks. Fr
 
 - **User Authentication**: Register, login, and logout functionality with modern, beautiful UI
 - **Book Management**: Upload, categorize, and manage books with cover images and PDF files
-- **Search Functionality**: Search books by title
-- **Category System**: Organize books by genres and categories
-- **Responsive Design**: Bootstrap 5-based modern UI with custom authentication styling
+- **Search Functionality**: Search books by title with modern search interface
+- **Category System**: Organize books by genres and categories with elegant navigation
+- **Responsive Design**: Bootstrap 5-based modern UI with custom authentication styling and sleek navigation
 - **File Handling**: Support for image uploads (covers) and PDF files
 - **Beautiful Admin Interface**: Jazzmin-powered Django admin with modern UI
 - **Production Ready**: Gunicorn and WhiteNoise for production deployment

@@ -14,99 +14,192 @@
     <link rel = 'stylesheet' href ="{% static 'css/home.css' %}">
     <link rel = 'stylesheet' href ="{% static 'css/book_detail.css' %}">
     <link rel = 'stylesheet' href ="{% static 'css/auth.css' %}">
+    <link rel = 'stylesheet' href ="{% static 'css/modern-navbar.css' %}">
     <link rel = 'stylesheet' href = "{% static 'uikit/css/uikit.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 </head>
 <body>
 
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-      <div id = 'logo'>
-        <img src = "{% static 'img/pdf 3.png' %}">
+  <!-- Modern Navbar -->
+  <nav class="modern-navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <a href="{% url 'home' %}" class="brand-link">
+          <img src="{% static 'img/pdf 3.png' %}" alt="FreeWriter" class="brand-logo">
+          <span class="brand-text">FreeWriter</span>
+        </a>
       </div>
-      <!-- <a class="navbar-brand" href="#">Navbar</a> -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent" >
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+      
+      <div class="nav-menu" id="navMenu">
+        <ul class="nav-links">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'all_books' %}">Books</a>
-          </li>
-
-        </ul>
-        <form class="d-flex" method = 'POST' action = "{% url 'book_search' %}" style="margin: 0px;">
-          <!-- <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"> -->
-          {% csrf_token %}
-          {{search_form.name_of_book}}
-          <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
-      <div style = 'width: auto; display: flex'>
-
-        {% if user.is_authenticated %}
-         <div class="dropdown">
-          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-            Hello {{user.username}}
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-            <li><a class="dropdown-item" href="{% url 'upload_book' %}">Upload Book</a></li>
-            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
-          </ul>
-        </div>
-
-        {% else %}
-          <a class="nav-link" href="{% url 'register' %}">
-            <button type="button" class="btn btn-outline-primary">Sign Up</button></a>
-            <a class="nav-link" href="{% url 'login' %}">
-              <button type="button" class="btn btn-outline-success">Login</button>
+            <a class="nav-link" href="{% url 'home' %}">
+              <i class="fas fa-home"></i>
+              Home
             </a>
-
-      {% endif %}
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'all_books' %}">
+              <i class="fas fa-book"></i>
+              Books
+            </a>
+          </li>
+        </ul>
+        
+        <div class="nav-search">
+          <form method="POST" action="{% url 'book_search' %}" class="search-form">
+            {% csrf_token %}
+            <div class="search-input-group">
+              {{search_form.name_of_book}}
+              <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="nav-auth">
+          {% if user.is_authenticated %}
+            <div class="user-dropdown">
+              <button class="user-btn" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle"></i>
+                <span class="username">{{user.username}}</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="{% url 'upload_book' %}">
+                  <i class="fas fa-upload"></i> Upload Book
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a></li>
+              </ul>
+            </div>
+          {% else %}
+            <div class="auth-buttons">
+              <a href="{% url 'register' %}" class="auth-btn auth-btn-primary">
+                <i class="fas fa-user-plus"></i>
+                Sign Up
+              </a>
+              <a href="{% url 'login' %}" class="auth-btn auth-btn-secondary">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+              </a>
+            </div>
+          {% endif %}
+        </div>
       </div>
-      </div>
+      
+      <button class="nav-toggle" id="navToggle">
+        <span class="hamburger"></span>
+      </button>
     </div>
   </nav>
 
+  <!-- Category Navigation -->
+  <div class="category-nav">
+    <div class="category-container">
+      {% for category in categories %}
+        <a class="category-btn" href="{% url 'category_detail' category.slug %}">
+          <i class="fas fa-tag"></i>
+          {{category.name}}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
 
+  <!-- Main Content -->
+  <main class="main-content">
+    {% block content %}
+    <h1>Hello World</h1>
+    {% endblock %}
+  </main>
 
-
-      <p uk-margin style = "width: 80%; margin: auto; margin-top: 20px">
-        {% for category in categories %}
-        <a class="btn btn-outline-secondary" href="{% url 'category_detail' category.slug %}"><strong>{{category.name}}</strong></a>
-        {% endfor %}
-    </p>
-
-
-
-<!-- uk-button uk-button-default -->
-
-{% block content %}
-<h1>Hello World</h1>
-{% endblock %}
-
-
-
-
-
-
-
-
-
-    <footer>
-        <h4><strong>©George Klenam @2021 </strong></h4><br>
-    </footer>
-    <footer>
-       <h4><hr>
-            FreeWriter is your no#1 search engine for PDF files. We have eBooks for you to download for free.<br> No annoying ads, no download limits, enjoy it and don't forget to share the love!
-          </h4><hr>
-    </footer>
+  <!-- Modern Footer -->
+  <footer class="modern-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <div class="footer-brand">
+            <img src="{% static 'img/pdf 3.png' %}" alt="FreeWriter" class="footer-logo">
+            <h3 class="footer-title">FreeWriter</h3>
+          </div>
+          <p class="footer-description">
+            Your #1 search engine for PDF files. We have eBooks for you to download for free. 
+            No annoying ads, no download limits, enjoy it and don't forget to share the love!
+          </p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'all_books' %}">Books</a></li>
+            {% if user.is_authenticated %}
+              <li><a href="{% url 'upload_book' %}">Upload Book</a></li>
+            {% endif %}
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Connect</h4>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="Facebook">
+              <i class="fab fa-facebook"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="Twitter">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="Instagram">
+              <i class="fab fa-instagram"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <div class="footer-copyright">
+          <p>&copy; 2021 George Klenam. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
 
 <!-- JavaScript Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
 
-
+<!-- Mobile Navigation Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const navToggle = document.getElementById('navToggle');
+    const navMenu = document.getElementById('navMenu');
+    
+    if (navToggle && navMenu) {
+        navToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            navToggle.classList.toggle('active');
+        });
+        
+        // Close mobile menu when clicking on a link
+        const navLinks = navMenu.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                navToggle.classList.remove('active');
+            });
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!navToggle.contains(event.target) && !navMenu.contains(event.target)) {
+                navMenu.classList.remove('active');
+                navToggle.classList.remove('active');
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>
