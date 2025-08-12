@@ -15,16 +15,20 @@ django.setup()
 
 from django.core.management import call_command
 from django.db import connection
+from django.db.utils import OperationalError
 
 def setup_database():
     """Set up the database with all necessary migrations"""
     print("Setting up FreeWriter database...")
     
     try:
-        # Run migrations
+        # Check database connection first
+        print("Checking database connection...")
+        connection.ensure_connection()
+        
+        # Run migrations (don't create new ones during deployment)
         print("Running migrations...")
-        call_command('makemigrations', '--noinput')
-        call_command('migrate')
+        call_command('migrate', '--noinput')
         
         # Check if tables exist
         with connection.cursor() as cursor:
@@ -39,21 +43,30 @@ def setup_database():
                 columns = [row[1] for row in cursor.fetchall()]
                 print(f"Book table columns: {columns}")
                 
-                if 'pdf_url' not in columns:
-                    print("ERROR: pdf_url column not found in bookapp_book table")
-                    print("Please run migrations manually:")
-                    print("python manage.py makemigrations")
-                    print("python manage.py migrate")
-                    return False
+                # Check for essential columns
+                essential_columns = ['id', 'title', 'author', 'summary']
+                missing_columns = [col for col in essential_columns if col not in columns]
+                
+                if missing_columns:
+                    print(f"WARNING: Missing essential columns: {missing_columns}")
+                    print("This might indicate a migration issue.")
+                else:
+                    print("Essential columns are present.")
             else:
                 print("ERROR: bookapp_book table not found")
+                print("Migrations may have failed. Check the logs above.")
                 return False
         
         print("Database setup completed successfully!")
         return True
         
+    except OperationalError as e:
+        print(f"Database connection error: {e}")
+        print("Make sure your database is running and accessible.")
+        return False
     except Exception as e:
         print(f"Error setting up database: {e}")
+        print("Check the error details above and fix any migration issues.")
         return False
 
 if __name__ == '__main__':
