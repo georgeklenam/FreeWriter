@@ -1,15 +1,19 @@
 
 from django.shortcuts import render, redirect
-from .models import Book, Category
+from .models import Book, Category, NewsletterSubscription
 from django.contrib.auth.forms import UserCreationForm
 from .forms import CreateUserForm, BookUploadForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 import os
 import re
 from django.utils import timezone
+import json
 
 # Create your views here.
 
@@ -195,10 +199,64 @@ def media_test(request):
 
 def health_check(request):
     """Simple health check endpoint for monitoring"""
-    from django.http import JsonResponse
     return JsonResponse({
         'status': 'healthy',
         'message': 'FreeWriter is running',
         'books_count': Book.objects.count(),
         'timestamp': timezone.now().isoformat()
     })
+
+@csrf_exempt
+@require_POST
+def newsletter_subscribe(request):
+    """Handle newsletter subscription"""
+    try:
+        data = json.loads(request.body)
+        email = data.get('email', '').strip()
+        
+        if not email:
+            return JsonResponse({'success': False, 'message': 'Email is required'}, status=400)
+        
+        # Basic email validation
+        if '@' not in email or '.' not in email:
+            return JsonResponse({'success': False, 'message': 'Please enter a valid email address'}, status=400)
+        
+        # Check if already subscribed
+        if NewsletterSubscription.objects.filter(email=email, is_active=True).exists():
+            return JsonResponse({'success': False, 'message': 'You are already subscribed to our newsletter!'}, status=400)
+        
+        # Create or reactivate subscription
+        subscription, created = NewsletterSubscription.objects.get_or_create(
+            email=email,
+            defaults={
+                'is_active': True,
+                'ip_address': request.META.get('REMOTE_ADDR'),
+                'user_agent': request.META.get('HTTP_USER_AGENT', '')
+            }
+        )
+        
+        if not created:
+            subscription.is_active = True
+            subscription.save()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Thank you for subscribing to our newsletter!'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid request data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'}, status=500)
+
+def privacy_policy(request):
+    """Privacy Policy page"""
+    return render(request, 'privacy_policy.html')
+
+def terms_of_service(request):
+    """Terms of Service page"""
+    return render(request, 'terms_of_service.html')
+
+def cookie_policy(request):
+    """Cookie Policy page"""
+    return render(request, 'cookie_policy.html')

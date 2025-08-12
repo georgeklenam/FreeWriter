@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>FreeWriter | Terms of Service</title>
+{% endblock %}
+
+{% block content %}
+
+<div class="policy-container">
+    <div class="policy-header">
+        <h1 class="policy-title">
+            <i class="fas fa-gavel"></i>
+            Terms of Service
+        </h1>
+        <p class="policy-subtitle">Last updated: {{ "now"|date:"F d, Y" }}</p>
+    </div>
+
+    <div class="policy-content">
+        <section class="policy-section">
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing and using FreeWriter ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>2. Description of Service</h2>
+            <p>FreeWriter is a digital library platform that provides access to books, eBooks, and educational materials. Our service includes:</p>
+            <ul>
+                <li>Book browsing and search functionality</li>
+                <li>User account management</li>
+                <li>Newsletter subscriptions</li>
+                <li>Content categorization and recommendations</li>
+            </ul>
+        </section>
+
+        <section class="policy-section">
+            <h2>3. User Accounts</h2>
+            <h3>3.1 Account Creation</h3>
+            <p>To access certain features of our service, you must create an account. You agree to:</p>
+            <ul>
+                <li>Provide accurate and complete information</li>
+                <li>Maintain the security of your account credentials</li>
+                <li>Notify us immediately of any unauthorized use</li>
+                <li>Accept responsibility for all activities under your account</li>
+            </ul>
+
+            <h3>3.2 Account Termination</h3>
+            <p>We reserve the right to terminate or suspend your account at any time for violations of these terms or for any other reason at our sole discretion.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>4. Acceptable Use</h2>
+            <p>You agree to use our service only for lawful purposes and in accordance with these Terms. You agree not to:</p>
+            <ul>
+                <li>Use the service for any illegal or unauthorized purpose</li>
+                <li>Violate any applicable laws or regulations</li>
+                <li>Infringe upon the rights of others</li>
+                <li>Attempt to gain unauthorized access to our systems</li>
+                <li>Interfere with or disrupt the service</li>
+                <li>Upload or transmit harmful content</li>
+                <li>Use automated systems to access the service</li>
+            </ul>
+        </section>
+
+        <section class="policy-section">
+            <h2>5. Intellectual Property Rights</h2>
+            <h3>5.1 Our Content</h3>
+            <p>The Service and its original content, features, and functionality are owned by FreeWriter and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.</p>
+
+            <h3>5.2 User Content</h3>
+            <p>By uploading content to our service, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, and distribute your content in connection with the service.</p>
+
+            <h3>5.3 Third-Party Content</h3>
+            <p>We respect the intellectual property rights of others. If you believe your work has been copied in a way that constitutes copyright infringement, please contact us.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>6. Privacy and Data Protection</h2>
+            <p>Your privacy is important to us. Please review our <a href="{% url 'privacy_policy' %}">Privacy Policy</a>, which also governs your use of the service, to understand our practices.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>7. Disclaimers and Limitations</h2>
+            <h3>7.1 Service Availability</h3>
+            <p>We strive to maintain the availability of our service, but we do not guarantee uninterrupted access. The service is provided "as is" and "as available."</p>
+
+            <h3>7.2 Content Accuracy</h3>
+            <p>While we strive to provide accurate and up-to-date information, we do not warrant the accuracy, completeness, or usefulness of any content on our service.</p>
+
+            <h3>7.3 Limitation of Liability</h3>
+            <p>In no event shall FreeWriter be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of the service.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>8. Indemnification</h2>
+            <p>You agree to defend, indemnify, and hold harmless FreeWriter and its officers, directors, employees, and agents from and against any claims, damages, obligations, losses, liabilities, costs, or debt arising from your use of the service.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>9. Governing Law</h2>
+            <p>These Terms shall be governed by and construed in accordance with the laws of [Your Jurisdiction], without regard to its conflict of law provisions.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>10. Changes to Terms</h2>
+            <p>We reserve the right to modify these terms at any time. We will notify users of any material changes by posting the new Terms on this page. Your continued use of the service after such modifications constitutes acceptance of the updated terms.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>11. Severability</h2>
+            <p>If any provision of these Terms is found to be unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary so that the Terms will otherwise remain in full force and effect.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>12. Contact Information</h2>
+            <p>If you have any questions about these Terms of Service, please contact us:</p>
+            <div class="contact-info">
+                <p><strong>Email:</strong> legal@freewriter.com</p>
+                <p><strong>Address:</strong> [Your Business Address]</p>
+                <p><strong>Phone:</strong> [Your Phone Number]</p>
+            </div>
+        </section>
+    </div>
+</div>
+
+{% endblock %}

@@ -21,8 +21,14 @@ from bookapp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),  # Home page at root
-    path('books/', include('bookapp.urls')),  # All other book-related URLs under /books/
+    path('', views.home, name='home'),
+    path('books/', include('bookapp.urls')),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
+    path('cookie-policy/', views.cookie_policy, name='cookie_policy'),
 ]
-urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

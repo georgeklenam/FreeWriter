@@ -200,11 +200,12 @@
           <div class="newsletter-signup">
             <p class="newsletter-text">Stay updated with new releases</p>
             <div class="newsletter-form">
-              <input type="email" placeholder="Enter your email" class="newsletter-input">
-              <button type="submit" class="newsletter-btn">
+              <input type="email" placeholder="Enter your email" class="newsletter-input" id="newsletterEmail">
+              <button type="submit" class="newsletter-btn" id="newsletterBtn">
                 <i class="fas fa-paper-plane"></i>
               </button>
             </div>
+            <div class="newsletter-message" id="newsletterMessage"></div>
           </div>
         </div>
       </div>
@@ -215,9 +216,9 @@
             <p>&copy; 2021 George Klenam. All rights reserved.</p>
           </div>
           <div class="footer-legal">
-            <a href="#" class="legal-link">Privacy Policy</a>
-            <a href="#" class="legal-link">Terms of Service</a>
-            <a href="#" class="legal-link">Cookie Policy</a>
+            <a href="{% url 'privacy_policy' %}" class="legal-link">Privacy Policy</a>
+            <a href="{% url 'terms_of_service' %}" class="legal-link">Terms of Service</a>
+            <a href="{% url 'cookie_policy' %}" class="legal-link">Cookie Policy</a>
           </div>
         </div>
       </div>
@@ -255,6 +256,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 navToggle.classList.remove('active');
             }
         });
+    }
+    
+    // Newsletter functionality
+    const newsletterForm = document.querySelector('.newsletter-form');
+    const newsletterEmail = document.getElementById('newsletterEmail');
+    const newsletterBtn = document.getElementById('newsletterBtn');
+    const newsletterMessage = document.getElementById('newsletterMessage');
+    
+    if (newsletterForm && newsletterEmail && newsletterBtn && newsletterMessage) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = newsletterEmail.value.trim();
+            if (!email) {
+                showNewsletterMessage('Please enter your email address', 'error');
+                return;
+            }
+            
+            // Disable button and show loading state
+            newsletterBtn.disabled = true;
+            newsletterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // Send subscription request
+            fetch('{% url "newsletter_subscribe" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNewsletterMessage(data.message, 'success');
+                    newsletterEmail.value = '';
+                } else {
+                    showNewsletterMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showNewsletterMessage('An error occurred. Please try again.', 'error');
+            })
+            .finally(() => {
+                // Re-enable button
+                newsletterBtn.disabled = false;
+                newsletterBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            });
+        });
+    }
+    
+    function showNewsletterMessage(message, type) {
+        newsletterMessage.textContent = message;
+        newsletterMessage.className = `newsletter-message ${type}`;
+        newsletterMessage.style.display = 'block';
+        
+        // Hide message after 5 seconds
+        setTimeout(() => {
+            newsletterMessage.style.display = 'none';
+        }, 5000);
     }
 });
 </script>
