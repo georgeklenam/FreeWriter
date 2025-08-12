@@ -7,7 +7,7 @@ echo "Starting FreeWriter application..."
 
 # Wait for database to be ready and run migrations
 echo "Running database migrations..."
-python manage.py makemigrations --noinput || echo "No new migrations to make"
+python manage.py makemigrations bookapp --noinput
 python manage.py migrate
 
 # Create superuser if it doesn't exist
