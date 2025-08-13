@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    <title>FreeWriter | Reading {{ book.title }}</title>
+{% endblock %}
+
+{% block content %}
+<div class="reader-container">
+    <!-- Reader Header -->
+    <div class="reader-header">
+        <div class="reader-info">
+            <h1 class="book-title">{{ book.title }}</h1>
+            <p class="book-author">by {{ book.author }}</p>
+        </div>
+        <div class="reader-controls">
+            <button class="control-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+                <i class="fas fa-expand"></i>
+            </button>
+            <button class="control-btn" onclick="increaseFontSize()" title="Increase Font Size">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="control-btn" onclick="decreaseFontSize()" title="Decrease Font Size">
+                <i class="fas fa-minus"></i>
+            </button>
+            <button class="control-btn" onclick="toggleTheme()" title="Toggle Theme">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="{% url 'book_detail' book.slug %}" class="control-btn back-btn" title="Back to Book Details">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- PDF Reader -->
+    <div class="pdf-reader" id="pdfReader">
+        {% if book.pdf %}
+            <iframe src="{{ book.pdf.url }}#toolbar=0&navpanes=0&scrollbar=0" 
+                    class="pdf-iframe" 
+                    id="pdfIframe"
+                    title="PDF Reader">
+                Your browser doesn't support PDF viewing. 
+                <a href="{{ book.pdf.url }}" target="_blank">Click here to open the PDF</a>
+            </iframe>
+        {% elif book.pdf_url %}
+            <div class="external-pdf-notice">
+                <div class="notice-content">
+                    <i class="fas fa-external-link-alt"></i>
+                    <h3>External PDF Link</h3>
+                    <p>This book is available on an external platform. Click below to read it there.</p>
+                    <a href="{{ book.pdf_url }}" target="_blank" class="external-link-btn">
+                        <i class="fas fa-external-link-alt"></i>
+                        Read on External Platform
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="no-pdf-notice">
+                <div class="notice-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>PDF Not Available</h3>
+                    <p>This book doesn't have a PDF file available for reading.</p>
+                    <a href="{% url 'book_detail' book.slug %}" class="back-link-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Book Details
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Reading Progress -->
+    <div class="reading-progress">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text">
+            <span id="currentPage">Page 1</span>
+            <span id="totalPages">of Loading...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentFontSize = 16;
+let isDarkTheme = false;
+let isFullscreen = false;
+
+// Font size controls
+function increaseFontSize() {
+    currentFontSize = Math.min(currentFontSize + 2, 24);
+    updateFontSize();
+}
+
+function decreaseFontSize() {
+    currentFontSize = Math.max(currentFontSize - 2, 12);
+    updateFontSize();
+}
+
+function updateFontSize() {
+    const iframe = document.getElementById('pdfIframe');
+    if (iframe) {
+        iframe.style.fontSize = currentFontSize + 'px';
+    }
+}
+
+// Theme toggle
+function toggleTheme() {
+    isDarkTheme = !isDarkTheme;
+    const container = document.querySelector('.reader-container');
+    const themeIcon = document.querySelector('.toggleTheme i');
+    
+    if (isDarkTheme) {
+        container.classList.add('dark-theme');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+    } else {
+        container.classList.remove('dark-theme');
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+    }
+}
+
+// Fullscreen toggle
+function toggleFullscreen() {
+    const container = document.querySelector('.reader-container');
+    const fullscreenIcon = document.querySelector('.toggleFullscreen i');
+    
+    if (!isFullscreen) {
+        if (container.requestFullscreen) {
+            container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+            container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+            container.msRequestFullscreen();
+        }
+        fullscreenIcon.classList.remove('fa-expand');
+        fullscreenIcon.classList.add('fa-compress');
+        isFullscreen = true;
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+        fullscreenIcon.classList.remove('fa-compress');
+        fullscreenIcon.classList.add('fa-expand');
+        isFullscreen = false;
+    }
+}
+
+// Reading progress tracking
+function updateProgress() {
+    const iframe = document.getElementById('pdfIframe');
+    if (iframe) {
+        try {
+            // This is a simplified progress tracking
+            // In a real implementation, you'd need to communicate with the PDF viewer
+            const progress = Math.random() * 100; // Placeholder
+            const progressFill = document.getElementById('progressFill');
+            const currentPage = document.getElementById('currentPage');
+            
+            progressFill.style.width = progress + '%';
+            currentPage.textContent = `Page ${Math.floor(progress / 10) + 1}`;
+        } catch (e) {
+            console.log('Progress tracking not available');
+        }
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateFontSize();
+    
+    // Update progress every few seconds
+    setInterval(updateProgress, 5000);
+    
+    // Handle fullscreen change events
+    document.addEventListener('fullscreenchange', function() {
+        if (!document.fullscreenElement) {
+            isFullscreen = false;
+            const fullscreenIcon = document.querySelector('.toggleFullscreen i');
+            fullscreenIcon.classList.remove('fa-compress');
+            fullscreenIcon.classList.add('fa-expand');
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -118,6 +118,56 @@ def add_review(request, slug):
     
     return redirect('book_detail', slug=slug)
 
+@login_required(login_url='login')
+def read_book(request, slug):
+    """Read a book on the platform"""
+    book = get_object_or_404(Book, slug=slug)
+    return render(request, 'read_book.html', {'book': book})
+
+@login_required(login_url='login')
+def dashboard(request):
+    """User dashboard based on user type"""
+    user = request.user
+    
+    if hasattr(user, 'profile') and user.profile.user_type == 'writer':
+        # Writer dashboard
+        uploaded_books = Book.objects.filter(author=user.username).order_by('-created_at')
+        total_books = uploaded_books.count()
+        total_ratings = sum(book.rating_count for book in uploaded_books)
+        total_reviews = sum(book.review_count for book in uploaded_books)
+        average_rating = uploaded_books.aggregate(avg_rating=models.Avg('ratings__rating'))['avg_rating'] or 0
+        
+        context = {
+            'user_type': 'writer',
+            'uploaded_books': uploaded_books,
+            'total_books': total_books,
+            'total_ratings': total_ratings,
+            'total_reviews': total_reviews,
+            'average_rating': round(average_rating, 1),
+        }
+    else:
+        # Reader dashboard
+        user_ratings = BookRating.objects.filter(user=user).order_by('-created_at')
+        user_reviews = BookReview.objects.filter(user=user).order_by('-created_at')
+        total_books_read = user_ratings.count()
+        total_reviews_written = user_reviews.count()
+        average_rating_given = user_ratings.aggregate(avg_rating=models.Avg('rating'))['avg_rating'] or 0
+        
+        # Get recently read books
+        recently_read = Book.objects.filter(ratings__user=user).distinct().order_by('-ratings__created_at')[:5]
+        
+        context = {
+            'user_type': 'reader',
+            'user_ratings': user_ratings,
+            'user_reviews': user_reviews,
+            'total_books_read': total_books_read,
+            'total_reviews_written': total_reviews_written,
+            'average_rating_given': round(average_rating_given, 1),
+            'recently_read': recently_read,
+        }
+    
+    return render(request, 'dashboard.html', context)
+
 def search_book(request):
     """Enhanced search with filters"""
     if request.method == 'POST':

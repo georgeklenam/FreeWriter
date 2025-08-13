@@ -47,15 +47,27 @@
 
             <div class="detail-actions">
                 {% if book.pdf %}
-                    <a href="{{book.pdf.url}}" download="{{book.pdf.url}}" class="action-btn download-btn">
-                        <i class="fas fa-download"></i>
-                        Download PDF
-                    </a>
+                    <div class="action-buttons">
+                        <a href="{% url 'read_book' book.slug %}" class="action-btn read-btn">
+                            <i class="fas fa-book-open"></i>
+                            Read Book
+                        </a>
+                        <a href="{{book.pdf.url}}" download="{{book.pdf.url}}" class="action-btn download-btn">
+                            <i class="fas fa-download"></i>
+                            Download PDF
+                        </a>
+                    </div>
                 {% elif book.pdf_url %}
-                    <a href="{{book.pdf_url}}" target="_blank" rel="noopener noreferrer" class="action-btn welib-btn">
-                        <i class="fas fa-search"></i>
-                        Find on Welib
-                    </a>
+                    <div class="action-buttons">
+                        <a href="{% url 'read_book' book.slug %}" class="action-btn read-btn">
+                            <i class="fas fa-book-open"></i>
+                            Read Book
+                        </a>
+                        <a href="{{book.pdf_url}}" target="_blank" rel="noopener noreferrer" class="action-btn welib-btn">
+                            <i class="fas fa-search"></i>
+                            Find on Welib
+                        </a>
+                    </div>
                 {% else %}
                     <button class="action-btn disabled-btn" disabled>
                         <i class="fas fa-times-circle"></i>
