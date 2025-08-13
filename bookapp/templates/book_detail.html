@@ -28,6 +28,23 @@
                 <p>{{book.summary}}</p>
             </div>
 
+            <!-- Book Rating Display -->
+            <div class="book-rating-display">
+                <div class="rating-stars">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= book.average_rating %}
+                            <i class="fas fa-star filled-star"></i>
+                        {% else %}
+                            <i class="far fa-star empty-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="rating-info">
+                    <span class="rating-score">{{ book.average_rating|floatformat:1 }}/5</span>
+                    <span class="rating-count">({{ book.rating_count }} ratings)</span>
+                </div>
+            </div>
+
             <div class="detail-actions">
                 {% if book.pdf %}
                     <a href="{{book.pdf.url}}" download="{{book.pdf.url}}" class="action-btn download-btn">
@@ -99,5 +116,113 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- Ratings and Reviews Section -->
+<div class="ratings-reviews-container">
+    <div class="section-header">
+        <h3 class="section-title">
+            <i class="fas fa-star"></i>
+            Ratings & Reviews
+        </h3>
+        {% if user.is_authenticated %}
+            <button class="add-review-btn" onclick="showReviewForm()">
+                <i class="fas fa-plus"></i>
+                Add Review
+            </button>
+        {% endif %}
+    </div>
+
+    <!-- Add Review Form (Hidden by default) -->
+    {% if user.is_authenticated %}
+        <div id="reviewForm" class="review-form-container" style="display: none;">
+            <form method="POST" action="{% url 'add_review' book.slug %}" class="review-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="rating">Rating:</label>
+                    <select name="rating" id="rating" class="rating-select" required>
+                        <option value="">Select rating</option>
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Very Good</option>
+                        <option value="3">3 - Good</option>
+                        <option value="2">2 - Fair</option>
+                        <option value="1">1 - Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="review_title">Review Title:</label>
+                    <input type="text" name="review_title" id="review_title" class="review-input" maxlength="200" required>
+                </div>
+                <div class="form-group">
+                    <label for="review_content">Review:</label>
+                    <textarea name="review_content" id="review_content" class="review-textarea" maxlength="2000" rows="4" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-review-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Review
+                    </button>
+                    <button type="button" class="cancel-review-btn" onclick="hideReviewForm()">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    {% endif %}
+
+    <!-- Reviews List -->
+    <div class="reviews-list">
+        {% for review in book.reviews.all %}
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar">
+                            {% if review.user.profile.avatar %}
+                                <img src="{{ review.user.profile.avatar.url }}" alt="{{ review.user.username }}" class="avatar-img">
+                            {% else %}
+                                <i class="fas fa-user-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div class="reviewer-details">
+                            <h4 class="reviewer-name">{{ review.user.username }}</h4>
+                            <div class="review-rating">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fas fa-star filled-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star empty-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="review-date">
+                        {{ review.created_at|date:"M d, Y" }}
+                    </div>
+                </div>
+                <div class="review-content">
+                    <h5 class="review-title">{{ review.title }}</h5>
+                    <p class="review-text">{{ review.content }}</p>
+                </div>
+            </div>
+        {% empty %}
+            <div class="no-reviews">
+                <i class="fas fa-comment-slash"></i>
+                <h4>No Reviews Yet</h4>
+                <p>Be the first to review this book!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function showReviewForm() {
+    document.getElementById('reviewForm').style.display = 'block';
+}
+
+function hideReviewForm() {
+    document.getElementById('reviewForm').style.display = 'none';
+}
+</script>
 
 {% endblock %}

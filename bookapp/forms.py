@@ -50,11 +50,22 @@ class CreateUserForm(UserCreationForm):
 		'class': 'form-input', 'placeholder': 'Enter your email address'
 		}))
 	password1 = forms.CharField(max_length=100, widget=forms.PasswordInput(attrs={
-		'class': 'form-input', 'placeholder': 'At least eight characters'
+		'class': 'form-input password-input', 'placeholder': 'At least eight characters'
 		}))
 	password2 = forms.CharField(max_length=100, widget=forms.PasswordInput(attrs={
-		'class': 'form-input', 'placeholder': 'Confirm your password'
+		'class': 'form-input password-input', 'placeholder': 'Confirm your password'
 		}))
+	
+	# Add user type selection
+	user_type = forms.ChoiceField(
+		choices=[('reader', 'Reader'), ('writer', 'Writer')],
+		widget=forms.Select(attrs={
+			'class': 'form-input',
+			'placeholder': 'Select your user type'
+		}),
+		label='I am a:',
+		help_text='Choose whether you want to read books or upload your own creations'
+	)
 
 	class Meta:
 		model = User

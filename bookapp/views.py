@@ -1,6 +1,6 @@
 
-from django.shortcuts import render, redirect
-from .models import Book, Category, NewsletterSubscription
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Book, Category, NewsletterSubscription, BookRating, BookReview, UserProfile
 from django.contrib.auth.forms import UserCreationForm
 from .forms import CreateUserForm, BookUploadForm
 from django.contrib import messages
@@ -79,10 +79,44 @@ def category_detail(request, slug):
 
 @login_required(login_url='login')
 def book_detail(request, slug):
-	book = Book.objects.get(slug = slug)
+	book = get_object_or_404(Book, slug=slug)
 	book_category = book.category.first()
 	similar_books = Book.objects.filter(category__name__startswith = book_category)
 	return render(request, 'book_detail.html', {'book': book, 'similar_books': similar_books})
+
+@login_required(login_url='login')
+def add_review(request, slug):
+    """Add a review and rating for a book"""
+    if request.method == 'POST':
+        book = get_object_or_404(Book, slug=slug)
+        rating = request.POST.get('rating')
+        review_title = request.POST.get('review_title')
+        review_content = request.POST.get('review_content')
+        
+        if rating and review_title and review_content:
+            # Create or update rating
+            rating_obj, created = BookRating.objects.get_or_create(
+                user=request.user,
+                book=book,
+                defaults={'rating': rating}
+            )
+            if not created:
+                rating_obj.rating = rating
+                rating_obj.save()
+            
+            # Create review
+            review = BookReview.objects.create(
+                user=request.user,
+                book=book,
+                title=review_title,
+                content=review_content
+            )
+            
+            messages.success(request, 'Your review has been submitted successfully!')
+        else:
+            messages.error(request, 'Please fill in all fields.')
+    
+    return redirect('book_detail', slug=slug)
 
 def search_book(request):
     """Enhanced search with filters"""
@@ -135,9 +169,16 @@ def register_page(request):
 	if request.method == 'POST':
 		register_form = CreateUserForm(request.POST)
 		if register_form.is_valid():
-			register_form.save()
-			messages.info(request, "Congrats New FreeWriter member!")
-			return redirect('login')
+			user = register_form.save()
+			
+			# Update user profile with user type
+			user_type = register_form.cleaned_data.get('user_type', 'reader')
+			if hasattr(user, 'profile'):
+				user.profile.user_type = user_type
+				user.profile.save()
+			
+			messages.info(request, f"Welcome to FreeWriter! You've joined as a {user_type.title()}.")
+			return redirect('home')
 
 	return render(request, 'register.html', {'register_form': register_form})
 

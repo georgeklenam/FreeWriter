@@ -38,12 +38,17 @@
                     <i class="fas fa-lock"></i>
                     Password
                 </label>
-                <input type="password" 
-                       name="password1" 
-                       id="id_password1" 
-                       class="form-input" 
-                       placeholder="Enter your password" 
-                       required>
+                <div class="password-input-group">
+                    <input type="password" 
+                           name="password1" 
+                           id="id_password1" 
+                           class="form-input" 
+                           placeholder="Enter your password" 
+                           required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('id_password1')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
 
             {% if messages %}
@@ -68,4 +73,22 @@
         </div>
     </div>
 </div>
+
+<script>
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.nextElementSibling;
+    const icon = button.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
 {% endblock %}
