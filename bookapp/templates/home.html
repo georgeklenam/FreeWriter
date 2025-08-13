@@ -60,7 +60,10 @@
               <p class="book-author">{{book.author}}</p>
               <div class="book-categories">
                 {% for category in book.category.all|slice:":2" %}
-                  <span class="category-tag">{{category.name}}</span>
+                  <span class="category-tag">
+                    <i class="{{category.icon}}"></i>
+                    {{category.name}}
+                  </span>
                 {% endfor %}
               </div>
             </div>
@@ -107,7 +110,10 @@
               <p class="book-author">{{book.author}}</p>
               <div class="book-categories">
                 {% for category in book.category.all|slice:":2" %}
-                  <span class="category-tag">{{category.name}}</span>
+                  <span class="category-tag">
+                    <i class="{{category.icon}}"></i>
+                    {{category.name}}
+                  </span>
                 {% endfor %}
               </div>
             </div>
@@ -154,7 +160,10 @@
               <p class="book-author">{{book.author}}</p>
               <div class="book-categories">
                 {% for category in book.category.all|slice:":2" %}
-                  <span class="category-tag">{{category.name}}</span>
+                  <span class="category-tag">
+                    <i class="{{category.icon}}"></i>
+                    {{category.name}}
+                  </span>
                 {% endfor %}
               </div>
             </div>

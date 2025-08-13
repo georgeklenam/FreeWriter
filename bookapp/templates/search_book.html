@@ -34,11 +34,11 @@
                            required>
                 </div>
                 
-                <div class="filter-group">
-                    <label for="category-filter" class="filter-label">
-                        <i class="fas fa-filter"></i>
-                        Category
-                    </label>
+                                 <div class="filter-group">
+                     <label for="category-filter" class="filter-label">
+                         <i class="fas fa-th-large"></i>
+                         Category
+                     </label>
                     <select id="category-filter" name="category" class="filter-select">
                         <option value="">All Categories</option>
                         {% for category in categories %}
@@ -151,11 +151,14 @@
                     <div class="book-info">
                         <h3 class="book-title">{{book.title}}</h3>
                         <p class="book-author">{{book.author}}</p>
-                        <div class="book-categories">
-                            {% for category in book.category.all|slice:":2" %}
-                                <span class="category-tag">{{category.name}}</span>
-                            {% endfor %}
-                        </div>
+                                             <div class="book-categories">
+                         {% for category in book.category.all|slice:":2" %}
+                             <span class="category-tag">
+                                 <i class="{{category.icon}}"></i>
+                                 {{category.name}}
+                             </span>
+                         {% endfor %}
+                     </div>
                     </div>
                 </a>
             </div>
